@@ -26,7 +26,7 @@ def main():
 			if i % 10000 == 0:
 				print('split', i, 'messages')
 
-FIELDS = 'message_id,is_edited,is_deleted,content,embeds,n_attachments,user_id,channel_id,guild_id'.split(',')
+FIELDS = 'message_id,is_edited,is_deleted,content,embeds,attachments,user_id,channel_id,guild_id'.split(',')
 def new_writer(date_str):
 	f = open(date_str + '.csv', 'w')
 	writer = csv.DictWriter(f, FIELDS)
