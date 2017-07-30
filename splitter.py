@@ -39,6 +39,5 @@ def snowflake_dt(snowflake):
 	unix_timestamp = ((snowflake >> 22) + DISCORD_EPOCH) // 1000
 	return datetime.datetime.utcfromtimestamp(unix_timestamp)
 
-
 if __name__ == '__main__':
 	main()
