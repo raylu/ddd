@@ -27,10 +27,17 @@ div#content {
 	padding: 50px;
 }
 
-table#all_time td {
+table tr:nth-child(even) {
+	background-color: #222;
+}
+table td {
 	text-align: right;
 	padding: 2px;
 }
-table#all_time td:first-child {
+table td:first-child {
 	text-align: left;
+}
+
+h2 {
+	margin: 20px 0 5px;
 }
