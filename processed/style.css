@@ -20,8 +20,12 @@ a:hover {
 	text-decoration: underline;
 }
 
+h2 {
+	margin: 20px 0 5px;
+}
+
 div#content {
-	width: 600px;
+	width: 900px;
 	margin: 50px auto;
 	background-color: #111;
 	padding: 50px;
@@ -31,13 +35,17 @@ table tr:nth-child(even) {
 	background-color: #222;
 }
 table td {
-	text-align: right;
 	padding: 2px;
 }
-table td:first-child {
-	text-align: left;
+table td.right {
+	text-align: right;
 }
 
-h2 {
-	margin: 20px 0 5px;
+div.bar {
+	display: inline-block;
+	height: 1em;
+	background-color: #888;
+}
+div.bar.filler {
+	background-color: #333;
 }
