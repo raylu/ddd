@@ -1,0 +1,36 @@
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	background-color: #000;
+	color: #ccc;
+	font-family: sans-serif;
+}
+
+a:link, a:visited {
+	color: #08a;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #0af;
+	text-decoration: underline;
+}
+
+div#content {
+	width: 600px;
+	margin: 50px auto;
+	background-color: #111;
+	padding: 50px;
+}
+
+table#all_time td {
+	text-align: right;
+	padding: 2px;
+}
+table#all_time td:first-child {
+	text-align: left;
+}

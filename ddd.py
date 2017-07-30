@@ -28,7 +28,7 @@ def process_all_time(users, messages_xz_path):
 
 	total = sum(user_counts.values())
 	all_time = []
-	for user_id, message_count in user_counts.most_common():
+	for user_id, message_count in user_counts.most_common(50):
 		name = users.get(user_id, user_id)
 		percentage = '%.2f' % (message_count / total * 100)
 		all_time.append({'user': name, 'messages': message_count, 'percentage': percentage})
