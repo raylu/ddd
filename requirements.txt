@@ -1,2 +1,3 @@
+eventlet
 jinja2
 pigwig

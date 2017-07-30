@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
+import eventlet
+eventlet.monkey_patch()
+
 import datetime
 import sqlite3
+import sys
 
 from pigwig import PigWig, Response
 
@@ -62,4 +66,9 @@ conn = sqlite3.connect('ddd.db')
 conn.row_factory = sqlite3.Row
 
 if __name__ == '__main__':
-	app.main()
+	if len(sys.argv) == 2: # production
+		import eventlet.wsgi
+		port = int(sys.argv[1])
+		eventlet.wsgi.server(eventlet.listen(('127.1', port)), app)
+	else:
+		app.main()
