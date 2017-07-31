@@ -1,4 +1,4 @@
-/* global $ */
+/* global $ MooDropdown */
 
 window.addEvent('domready', function() {
 	'use strict';
@@ -10,6 +10,7 @@ window.addEvent('domready', function() {
 
 	const channelSelect = new MooDropdown($('channel'));
 	const userSelect = new MooDropdown($('user'));
+	MooDropdown.setupClose(channelSelect, userSelect);
 	channelSelect.addOption(null, '(all)');
 	userSelect.addOption(null, '(all)');
 

@@ -1,6 +1,15 @@
-'use strict';
+/* exported MooDropdown */
 
 class MooDropdown {
+	static setupClose(...dropdowns) {
+		// we called stopPropagation on click events inside any MooDropdown.element,
+		// so this event only fires for clicks outside the dropdowns.
+		// unfortunately, clicking a MooDropdown doesn't close other MooDropdowns this way :(
+		window.addEvent('click', () => {
+			dropdowns.each((dropdown) => dropdown.close());
+		});
+	}
+
 	constructor(div) {
 		this.options = [];
 		this.value = undefined;
@@ -72,7 +81,7 @@ class MooDropdown {
 	}
 
 	_select(optionDiv) {
-		const text = optionDiv.get('text')
+		const text = optionDiv.get('text');
 		this.value = optionDiv.get('data-value');
 		this.display.set('text', text);
 		this.close();
@@ -80,6 +89,7 @@ class MooDropdown {
 	}
 
 	_click(event) {
+		event.stopPropagation();
 		if (event.target.hasClass('moodropdown-option')) {
 			this._select(event.target);
 		} else if (event.target.tagName != 'INPUT') {
@@ -104,6 +114,8 @@ class MooDropdown {
 }
 
 function debounce(ms, func) {
+	'use strict';
+
 	let timeout;
 	return function() {
 		clearTimeout(timeout);
