@@ -121,7 +121,7 @@ def response_done(request, response):
 
 app = PigWig(routes, template_dir='templates', response_done_handler=response_done)
 
-engine = sqlalchemy.create_engine('sqlite:///ddd.db', echo=True)
+engine = sqlalchemy.create_engine('sqlite:///ddd.db')
 Session = sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bind=engine))
 Base = sqlalchemy.ext.declarative.declarative_base()
 
