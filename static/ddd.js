@@ -19,20 +19,27 @@ window.addEvent('domready', function() {
 			qs['user_id'] = userId;
 
 		new Request.JSON({
-			'url': 'months.json',
+			'url': 'by_month.json',
 			'data': qs,
-			'onSuccess': months,
+			'onSuccess': byMonth,
 		}).get();
 
 		new Request.JSON({
-			'url': 'hours.json',
+			'url': 'by_hour.json',
 			'data': qs,
-			'onSuccess': hours,
+			'onSuccess': byHour,
 		}).get();
 
 		new Request.JSON({
-			'url': 'all_time.json',
-			'onSuccess': allTime,
+			'url': 'by_user.json',
+			'data': qs,
+			'onSuccess': byUser,
+		}).get();
+
+		new Request.JSON({
+			'url': 'by_channel.json',
+			'data': qs,
+			'onSuccess': byChannel,
 		}).get();
 	}
 
@@ -45,10 +52,10 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function months(data) {
+	function byMonth(data) {
 		const max = Math.max.apply(null, data.map((month) => month['count']));
 
-		const table = $('months').getElement('tbody');
+		const table = $('by_month').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		data.each((month) => {
 			const row = new Element('tr');
@@ -65,10 +72,10 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function hours(data) {
+	function byHour(data) {
 		const max = Math.max.apply(null, data.map((hour) => hour['count']));
 
-		const table = $('hours').getElement('tbody');
+		const table = $('by_hour').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		data.each((hour) => {
 			const row = new Element('tr');
@@ -85,8 +92,8 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function allTime(data) {
-		const table = $('all_time').getElement('tbody');
+	function byUser(data) {
+		const table = $('by_user').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		let cumulative = 0;
 		data.each((user, i) => {
@@ -107,6 +114,26 @@ window.addEvent('domready', function() {
 				new Element('td', {'text': user['percentage'].toFixed(2), 'class': 'right'}),
 				new Element('td').adopt(filler, bar),
 				new Element('td', {'text': cumulative.toFixed(2), 'class': 'right'}),
+			);
+			table.grab(row);
+		});
+	}
+
+	function byChannel(data) {
+		const table = $('by_channel').getElement('tbody');
+		table.getElement('tr').getAllNext().destroy();
+		data.each((channel, i) => {
+			const row = new Element('tr');
+			const bar = new Element('div', {
+				'class': 'bar',
+				'styles': {'width': channel['percentage'] * 5},
+			});
+			row.adopt(
+				new Element('td', {'text': i + 1}),
+				new Element('td', {'text': channel['name']}),
+				new Element('td', {'text': channel['count'].toLocaleString(), 'class': 'right'}),
+				new Element('td', {'text': channel['percentage'].toFixed(2), 'class': 'right'}),
+				new Element('td').adopt(bar),
 			);
 			table.grab(row);
 		});
