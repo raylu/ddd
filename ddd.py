@@ -1,55 +1,64 @@
 #!/usr/bin/env python3
 
+import sys
+if len(sys.argv) == 1: # dev
+	import pigwig.reloader_linux
+	pigwig.reloader_linux.init()
+
 import eventlet
 eventlet.monkey_patch()
 
 import datetime
 import sqlite3
-import sys
 
+import eventlet.wsgi
 from pigwig import PigWig, Response
+import sqlalchemy
+from sqlalchemy import Column, Integer, String
+import sqlalchemy.ext.declarative
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship, joinedload
+from sqlalchemy.sql import func
+
 
 def root(request):
 	return Response.render(request, 'index.html', {})
 
 def months(request):
-	c = conn.cursor()
-	c.execute('''
-		SELECT strftime("%Y-%m", hour, "unixepoch") AS month, SUM(count)
-		FROM messages GROUP BY month ORDER BY month ASC
-	''')
+	session = Session()
+	rows = session.query(Messages) \
+			.with_entities(func.strftime('%Y-%m', Messages.hour, 'unixepoch').label('month'),
+					func.sum(Messages.count).label('count')) \
+			.group_by('month').order_by('month')
 	data = []
-	for row in c.fetchall():
-		data.append({'month': row['month'], 'count': row['SUM(count)']})
+	for row in rows:
+		data.append({'month': row.month, 'count': row.count})
 	return Response.json(data)
 
 def hours(request):
-	c = conn.cursor()
-	c.execute('''
-		SELECT strftime('%H', hour, 'unixepoch') AS agg_hour, SUM(count)
-		FROM messages GROUP BY agg_hour ORDER BY agg_hour ASC;
-	''')
+	session = Session()
+	rows = session.query(Messages) \
+			.with_entities(func.strftime('%H', Messages.hour, 'unixepoch').label('agg_hour'),
+					func.sum(Messages.count).label('count')) \
+			.group_by('agg_hour').order_by('agg_hour')
 	data = []
-	for row in c.fetchall():
-		data.append({'hour': row['agg_hour'], 'count': row['SUM(count)']})
+	for row in rows:
+		data.append({'hour': row.agg_hour, 'count': row.count})
 	return Response.json(data)
 
 def all_time(request):
-	c = conn.cursor()
-	c.execute('SELECT SUM(count) FROM messages')
-	total = c.fetchall()[0]['SUM(count)']
-	c.execute('''
-		SELECT name, SUM(count) FROM messages
-		JOIN users ON messages.user_id = users.user_id
-		GROUP BY users.user_id ORDER BY SUM(count) DESC LIMIT 50
-	''')
+	session = Session()
+	total = session.query(func.sum(Messages.count)).scalar()
+
+	rows = session.query(Messages) \
+			.with_entities(Messages.user_id, Users.name, func.sum(Messages.count).label('count')) \
+			.outerjoin(Users, Messages.user_id == Users.user_id) \
+			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc()).limit(50)
 	data = []
-	for row in c.fetchall():
-		count = row['SUM(count)']
+	for row in rows:
 		data.append({
-			'name': row['name'],
-			'count': count,
-			'percentage': float('%.2f' % (count / total * 100)),
+			'name': row.name or str(row.user_id),
+			'count': row.count,
+			'percentage': float('%.2f' % (row.count / total * 100)),
 		})
 	return Response.json(data)
 
@@ -60,15 +69,37 @@ routes = [
 	('GET', '/all_time.json', all_time),
 ]
 
-app = PigWig(routes, template_dir='templates')
+def response_done(request, response):
+	Session.remove()
 
-conn = sqlite3.connect('ddd.db')
-conn.row_factory = sqlite3.Row
+app = PigWig(routes, template_dir='templates', response_done_handler=response_done)
+
+engine = sqlalchemy.create_engine('sqlite:///ddd.db', echo=True)
+Session = sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bind=engine))
+Base = sqlalchemy.ext.declarative.declarative_base()
+
+class Channels(Base):
+	__tablename__ = 'channels'
+	channel_id = Column(Integer, primary_key=True)
+	name = Column(String)
+
+class Users(Base):
+	__tablename__ = 'users'
+	user_id = Column(Integer, primary_key=True)
+	name = Column(String)
+
+class Messages(Base):
+	__tablename__ = 'messages'
+	channel_id = Column(Integer, primary_key=True)
+	user_id = Column(Integer, primary_key=True)
+	hour = Column(Integer, primary_key=True)
+	count = Column(Integer)
 
 if __name__ == '__main__':
+	port = 8000
 	if len(sys.argv) == 2: # production
-		import eventlet.wsgi
 		port = int(sys.argv[1])
-		eventlet.wsgi.server(eventlet.listen(('127.1', port)), app)
 	else:
-		app.main()
+		app.template_engine.jinja_env.auto_reload = True
+
+	eventlet.wsgi.server(eventlet.listen(('127.1', port)), app)

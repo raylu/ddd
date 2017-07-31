@@ -70,7 +70,7 @@ window.addEvent('domready', function() {
 			cumulative += user['percentage'];
 			row.adopt(
 				new Element('td', {'text': i + 1}),
-				new Element('td', {'text': user['user']}),
+				new Element('td', {'text': user['name']}),
 				new Element('td', {'text': user['count'].toLocaleString(), 'class': 'right'}),
 				new Element('td', {'text': user['percentage'].toFixed(2), 'class': 'right'}),
 				new Element('td').adopt(filler, bar),
