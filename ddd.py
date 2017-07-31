@@ -63,7 +63,8 @@ def by_hour(request):
 
 def by_user(request):
 	session = Session()
-	total = session.query(func.sum(Messages.count)).scalar()
+	query = session.query(func.sum(Messages.count))
+	total = _filter(query, request.query).scalar()
 
 	query = session.query(Messages) \
 			.with_entities(Messages.user_id, Users.name, func.sum(Messages.count).label('count')) \
@@ -83,7 +84,8 @@ def by_user(request):
 
 def by_channel(request):
 	session = Session()
-	total = session.query(func.sum(Messages.count)).scalar()
+	query = session.query(func.sum(Messages.count))
+	total = _filter(query, request.query).scalar()
 
 	query = session.query(Messages) \
 			.with_entities(Messages.channel_id, Channels.name, func.sum(Messages.count).label('count')) \

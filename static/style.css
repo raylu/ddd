@@ -40,6 +40,9 @@ table tr:nth-child(even) {
 }
 table td {
 	padding: 2px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 table td.right {
 	text-align: right;
