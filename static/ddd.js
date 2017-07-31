@@ -1,3 +1,5 @@
+/* global $ */
+
 window.addEvent('domready', function() {
 	'use strict';
 
@@ -65,8 +67,8 @@ window.addEvent('domready', function() {
 		if (params['user_id'])
 			userSelect.set('value', params['user_id']);
 
-		channelSelect.addEvent('change', () => {query(false)});
-		userSelect.addEvent('change', () => {query(false)});
+		channelSelect.addEvent('change', () => {query(false);});
+		userSelect.addEvent('change', () => {query(false);});
 
 		query(true);
 	}
@@ -85,7 +87,7 @@ window.addEvent('domready', function() {
 			row.adopt(
 				new Element('td', {'text': month['month']}),
 				new Element('td', {'text': month['count'].toLocaleString(), 'class': 'right'}),
-				new Element('td').grab(bar),
+				new Element('td').grab(bar)
 			);
 			table.grab(row);
 		});
@@ -105,7 +107,7 @@ window.addEvent('domready', function() {
 			row.adopt(
 				new Element('td', {'text': hour['hour']}),
 				new Element('td', {'text': hour['count'].toLocaleString(), 'class': 'right'}),
-				new Element('td').grab(bar),
+				new Element('td').grab(bar)
 			);
 			table.grab(row);
 		});
@@ -132,7 +134,7 @@ window.addEvent('domready', function() {
 				new Element('td', {'text': user['count'].toLocaleString(), 'class': 'right'}),
 				new Element('td', {'text': user['percentage'].toFixed(2), 'class': 'right'}),
 				new Element('td').adopt(filler, bar),
-				new Element('td', {'text': cumulative.toFixed(2), 'class': 'right'}),
+				new Element('td', {'text': cumulative.toFixed(2), 'class': 'right'})
 			);
 			table.grab(row);
 		});
@@ -152,7 +154,7 @@ window.addEvent('domready', function() {
 				new Element('td', {'text': channel['name']}),
 				new Element('td', {'text': channel['count'].toLocaleString(), 'class': 'right'}),
 				new Element('td', {'text': channel['percentage'].toFixed(2), 'class': 'right'}),
-				new Element('td').adopt(bar),
+				new Element('td').adopt(bar)
 			);
 			table.grab(row);
 		});

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# pylint: disable=wrong-import-position,ungrouped-imports
+
 import sys
 if len(sys.argv) == 1: # dev
 	import pigwig.reloader_linux
@@ -8,15 +10,12 @@ if len(sys.argv) == 1: # dev
 import eventlet
 eventlet.monkey_patch()
 
-import datetime
-import sqlite3
-
 import eventlet.wsgi
 from pigwig import PigWig, Response
 import sqlalchemy
 from sqlalchemy import Column, Integer, String
 import sqlalchemy.ext.declarative
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship, joinedload
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import func
 
 
@@ -124,7 +123,7 @@ def response_done(request, response):
 app = PigWig(routes, template_dir='templates', response_done_handler=response_done)
 
 engine = sqlalchemy.create_engine('sqlite:///ddd.db')
-Session = sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bind=engine))
+Session = scoped_session(sessionmaker(bind=engine))
 Base = sqlalchemy.ext.declarative.declarative_base()
 
 class Channels(Base):
