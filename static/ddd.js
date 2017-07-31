@@ -8,17 +8,17 @@ window.addEvent('domready', function() {
 		'onSuccess': channelUserList,
 	}).get();
 
-	const channelSelect = $('channel');
-	const userSelect = $('user');
+	const channelSelect = new MooDropdown($('channel'));
+	const userSelect = new MooDropdown($('user'));
+	channelSelect.addOption(null, '(all)');
+	userSelect.addOption(null, '(all)');
 
 	function query(initial) {
 		const qs = {};
-		const channelId = channelSelect.get('value');
-		if (channelId)
-			qs['channel_id'] = channelId;
-		const userId = userSelect.get('value');
-		if (userId)
-			qs['user_id'] = userId;
+		if (channelSelect.value)
+			qs['channel_id'] = channelSelect.value;
+		if (userSelect.value)
+			qs['user_id'] = userSelect.value;
 		if (!initial)
 			history.pushState(qs, '', '?' + Object.toQueryString(qs));
 
@@ -49,11 +49,13 @@ window.addEvent('domready', function() {
 
 	function channelUserList(data) {
 		data['channels'].each((channel) => {
-			channelSelect.grab(new Element('option', {'text': channel['name'], 'value': channel['id']}));
+			channelSelect.addOption(channel['id'], channel['name']);
 		});
 		data['users'].each((user) => {
-			userSelect.grab(new Element('option', {'text': user['name'], 'value': user['id']}));
+			userSelect.addOption(user['id'], user['name']);
 		});
+		channelSelect.render();
+		userSelect.render();
 
 		const qs = window.location.search.substr(1);
 		const params = {};
@@ -62,13 +64,11 @@ window.addEvent('domready', function() {
 			[key, val] = fragment.split('=');
 			params[key] = decodeURIComponent(val);
 		});
-		if (params['channel_id'])
-			channelSelect.set('value', params['channel_id']);
-		if (params['user_id'])
-			userSelect.set('value', params['user_id']);
+		channelSelect.select(params['channel_id'] || null);
+		userSelect.select(params['user_id'] || null);
 
-		channelSelect.addEvent('change', () => {query(false);});
-		userSelect.addEvent('change', () => {query(false);});
+		channelSelect.addEvent('moodropdown-select', () => {query(false);});
+		userSelect.addEvent('moodropdown-select', () => {query(false);});
 
 		query(true);
 	}

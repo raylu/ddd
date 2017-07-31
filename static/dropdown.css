@@ -1,0 +1,63 @@
+.moodropdown {
+	position: relative;
+	display: inline-block;
+	width: 200px;
+	height: 25px;
+	vertical-align: middle;
+	background-color: #222;
+	border: 1px solid #333;
+	cursor: default;
+}
+.moodropdown-display {
+	display: inline-block;
+	width: 182px;
+	height: 25px;
+	padding: 2.5px 3px;
+	cursor: inherit;
+}
+.moodropdown-options {
+	position: absolute;
+	display: none;
+	top: 28px;
+	left: -1px;
+	width: 200px;
+	background-color: #222;
+	border: 2px solid #444;
+	cursor: inherit;
+}
+.moodropdown-options > div {
+	padding: 3px 5px;
+	cursor: inherit;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.moodropdown-options > div:hover {
+	background-color: #333;
+}
+.moodropdown-options > input {
+	width: 190px;
+	margin: 3px;
+	cursor: inherit;
+	padding: 2px 3px;
+	font-size: inherit;
+	background-color: #333;
+	border: 1px solid #444;
+	color: inherit;
+}
+
+.moodropdown-arrow {
+	display: inline-block;
+	margin: 8px 3px 0 0;
+	width: 0; 
+	height: 0; 
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	float: right;
+}
+.moodropdown-arrow.up {
+	border-bottom: 5px solid #38a;
+}
+.moodropdown-arrow.down {
+	border-top: 5px solid #38a;
+}

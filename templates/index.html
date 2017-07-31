@@ -4,19 +4,18 @@
 	<meta charset="UTF-8">
 	<title>discord - programming</title>
 	<link rel="stylesheet" href="/static/style.css">
+	<link rel="stylesheet" href="/static/dropdown.css">
 </head>
 <body>
 	<div id="content">
 		<h1>discord - programming</h1>
 
+		<p>
 		<form>
-			channel: <select id="channel">
-				<option value="">[all]</option>
-			</select>
-			user: <select id="user">
-				<option value="">[all]</option>
-			</select>
+			channel: <div id="channel"></div>
+			user: <div id="user"></div>
 		</form>
+		</p>
 
 		<h2>by month:</h2>
 		<table id="by_month">
@@ -57,6 +56,7 @@
 	</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/mootools/1.6.0/mootools-core.js"></script>
+	<script src="/static/dropdown.js"></script>
 	<script src="/static/ddd.js"></script>
 </body>
 </html>
