@@ -23,25 +23,47 @@ from sqlalchemy.sql import func
 def root(request):
 	return Response.render(request, 'index.html', {})
 
+def channel_user_list(request):
+	session = Session()
+
+	channels = []
+	for row in session.query(Channels).order_by(Channels.name):
+		channels.append({'id': row.channel_id, 'name': row.name})
+
+	users = []
+	for row in session.query(Users).order_by(Users.name):
+		users.append({'id': row.user_id, 'name': row.name})
+	return Response.json({'channels': channels, 'users': users})
+
 def months(request):
 	session = Session()
-	rows = session.query(Messages) \
+	query = session.query(Messages) \
 			.with_entities(func.strftime('%Y-%m', Messages.hour, 'unixepoch').label('month'),
 					func.sum(Messages.count).label('count')) \
 			.group_by('month').order_by('month')
+	if 'channel_id' in request.query:
+		query = query.filter(Messages.channel_id == int(request.query['channel_id']))
+	if 'user_id' in request.query:
+		query = query.filter(Messages.user_id == int(request.query['user_id']))
+
 	data = []
-	for row in rows:
+	for row in query:
 		data.append({'month': row.month, 'count': row.count})
 	return Response.json(data)
 
 def hours(request):
 	session = Session()
-	rows = session.query(Messages) \
+	query = session.query(Messages) \
 			.with_entities(func.strftime('%H', Messages.hour, 'unixepoch').label('agg_hour'),
 					func.sum(Messages.count).label('count')) \
 			.group_by('agg_hour').order_by('agg_hour')
+	if 'channel_id' in request.query:
+		query = query.filter(Messages.channel_id == int(request.query['channel_id']))
+	if 'user_id' in request.query:
+		query = query.filter(Messages.user_id == int(request.query['user_id']))
+
 	data = []
-	for row in rows:
+	for row in query:
 		data.append({'hour': row.agg_hour, 'count': row.count})
 	return Response.json(data)
 
@@ -49,12 +71,12 @@ def all_time(request):
 	session = Session()
 	total = session.query(func.sum(Messages.count)).scalar()
 
-	rows = session.query(Messages) \
+	query = session.query(Messages) \
 			.with_entities(Messages.user_id, Users.name, func.sum(Messages.count).label('count')) \
 			.outerjoin(Users, Messages.user_id == Users.user_id) \
 			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc()).limit(50)
 	data = []
-	for row in rows:
+	for row in query:
 		data.append({
 			'name': row.name or str(row.user_id),
 			'count': row.count,
@@ -64,6 +86,7 @@ def all_time(request):
 
 routes = [
 	('GET', '/', root),
+	('GET', '/channel_user_list.json', channel_user_list),
 	('GET', '/months.json', months),
 	('GET', '/hours.json', hours),
 	('GET', '/all_time.json', all_time),

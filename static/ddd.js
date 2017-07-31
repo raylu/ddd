@@ -2,24 +2,54 @@ window.addEvent('domready', function() {
 	'use strict';
 
 	new Request.JSON({
-		'url': 'months.json',
-		'onSuccess': months,
+		'url': 'channel_user_list.json',
+		'onSuccess': channelUserList,
 	}).get();
 
-	new Request.JSON({
-		'url': 'hours.json',
-		'onSuccess': hours,
-	}).get();
+	const channelSelect = $('channel');
+	const userSelect = $('user');
 
-	new Request.JSON({
-		'url': 'all_time.json',
-		'onSuccess': all_time,
-	}).get();
+	function query() {
+		const qs = {};
+		const channelId = channelSelect.get('value');
+		if (channelId)
+			qs['channel_id'] = channelId;
+		const userId = userSelect.get('value');
+		if (userId)
+			qs['user_id'] = userId;
+
+		new Request.JSON({
+			'url': 'months.json',
+			'data': qs,
+			'onSuccess': months,
+		}).get();
+
+		new Request.JSON({
+			'url': 'hours.json',
+			'data': qs,
+			'onSuccess': hours,
+		}).get();
+
+		new Request.JSON({
+			'url': 'all_time.json',
+			'onSuccess': allTime,
+		}).get();
+	}
+
+	function channelUserList(data) {
+		data['channels'].each((channel) => {
+			channelSelect.grab(new Element('option', {'text': channel['name'], 'value': channel['id']}));
+		});
+		data['users'].each((user) => {
+			userSelect.grab(new Element('option', {'text': user['name'], 'value': user['id']}));
+		});
+	}
 
 	function months(data) {
 		const max = Math.max.apply(null, data.map((month) => month['count']));
 
 		const table = $('months').getElement('tbody');
+		table.getElement('tr').getAllNext().destroy();
 		data.each((month) => {
 			const row = new Element('tr');
 			const bar = new Element('div', {
@@ -39,6 +69,7 @@ window.addEvent('domready', function() {
 		const max = Math.max.apply(null, data.map((hour) => hour['count']));
 
 		const table = $('hours').getElement('tbody');
+		table.getElement('tr').getAllNext().destroy();
 		data.each((hour) => {
 			const row = new Element('tr');
 			const bar = new Element('div', {
@@ -54,8 +85,9 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function all_time(data) {
+	function allTime(data) {
 		const table = $('all_time').getElement('tbody');
+		table.getElement('tr').getAllNext().destroy();
 		let cumulative = 0;
 		data.each((user, i) => {
 			const row = new Element('tr');
@@ -79,4 +111,9 @@ window.addEvent('domready', function() {
 			table.grab(row);
 		});
 	}
+
+	channelSelect.addEvent('change', query);
+	userSelect.addEvent('change', query);
+
+	query();
 });
