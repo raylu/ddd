@@ -121,11 +121,11 @@ window.addEvent('domready', function() {
 			const row = new Element('tr');
 			const filler = new Element('div', {
 				'class': 'bar filler',
-				'styles': {'width': cumulative * 5},
+				'styles': {'width': cumulative * 4},
 			});
 			const bar = new Element('div', {
 				'class': 'bar',
-				'styles': {'width': user['percentage'] * 5},
+				'styles': {'width': user['percentage'] * 4},
 			});
 			cumulative += user['percentage'];
 			row.adopt(
