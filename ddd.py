@@ -28,11 +28,11 @@ def channel_user_list(request):
 
 	channels = []
 	for row in session.query(Channels).order_by(Channels.name):
-		channels.append({'id': row.channel_id, 'name': row.name})
+		channels.append({'id': str(row.channel_id), 'name': row.name})
 
 	users = []
 	for row in session.query(Users).order_by(Users.name):
-		users.append({'id': row.user_id, 'name': row.name})
+		users.append({'id': str(row.user_id), 'name': row.name})
 	return Response.json({'channels': channels, 'users': users})
 
 def months(request):
