@@ -34,8 +34,7 @@ class MooDropdown {
 		const search = this.input.get('value').toLocaleLowerCase();
 		this.optionsDiv.getChildren('div').destroy();
 		let added = 0;
-		for (let i = 0; i < this.options.length; i++) {
-			const option = this.options[i];
+		for (const option of this.options) {
 			if (!search || option['text'].toLocaleLowerCase().contains(search)) {
 				this.optionsDiv.grab(new Element('div', {
 					'class': 'moodropdown-option',
@@ -67,8 +66,7 @@ class MooDropdown {
 	}
 
 	select(value) {
-		for (let i = 0; i < this.options.length; i++) {
-			const option = this.options[i];
+		for (const option of this.options) {
 			if (option['value'] == value) {
 				this.value = value;
 				this.display.set('text', option['text']);
