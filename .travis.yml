@@ -1,0 +1,37 @@
+language: python
+
+python:
+  - '3.4'
+  - '3.5'
+  - '3.6'
+
+sudo: false
+
+cache: pip
+
+cache:
+  - pip
+  - npm
+
+install:
+  - pip install --quiet --requirement requirements.txt
+  - pip install --quiet pylint
+  - npm install --global eslint
+
+script:
+  - python3 -m unittest --verbose
+  - 'pylint *.py'
+  - eslint static
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+  irc:
+    channels:
+      - 'irc.rizon.net#raylu'
+    skip_join: true
+    on_success: change
+    on_failure: always
+    template:
+      - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message} %{build_url}'
