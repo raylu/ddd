@@ -9,7 +9,7 @@ window.addEvent('domready', function() {
 	const channelSelect = $('channel');
 	const userSelect = $('user');
 
-	function query() {
+	function query(initial) {
 		const qs = {};
 		const channelId = channelSelect.get('value');
 		if (channelId)
@@ -17,6 +17,8 @@ window.addEvent('domready', function() {
 		const userId = userSelect.get('value');
 		if (userId)
 			qs['user_id'] = userId;
+		if (!initial)
+			history.pushState(qs, '', '?' + Object.toQueryString(qs));
 
 		new Request.JSON({
 			'url': 'by_month.json',
@@ -50,6 +52,23 @@ window.addEvent('domready', function() {
 		data['users'].each((user) => {
 			userSelect.grab(new Element('option', {'text': user['name'], 'value': user['id']}));
 		});
+
+		const qs = window.location.search.substr(1);
+		const params = {};
+		qs.split('&').each((fragment) => {
+			let key, val;
+			[key, val] = fragment.split('=');
+			params[key] = decodeURIComponent(val);
+		});
+		if (params['channel_id'])
+			channelSelect.set('value', params['channel_id']);
+		if (params['user_id'])
+			userSelect.set('value', params['user_id']);
+
+		channelSelect.addEvent('change', () => {query(false)});
+		userSelect.addEvent('change', () => {query(false)});
+
+		query(true);
 	}
 
 	function byMonth(data) {
@@ -138,9 +157,4 @@ window.addEvent('domready', function() {
 			table.grab(row);
 		});
 	}
-
-	channelSelect.addEvent('change', query);
-	userSelect.addEvent('change', query);
-
-	query();
 });

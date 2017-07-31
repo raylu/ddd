@@ -10,6 +10,10 @@ body {
 	font-family: sans-serif;
 }
 
+p {
+	margin-top: 3em;
+}
+
 a:link, a:visited {
 	color: #08a;
 	text-decoration: none;
@@ -51,4 +55,8 @@ div.bar {
 }
 div.bar.filler {
 	background-color: #333;
+}
+
+a.github {
+	font-family: monospace;
 }
