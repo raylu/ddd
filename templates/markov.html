@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block head %}
+	<link rel="stylesheet" href="/static/dropdown.css">
+{% endblock head %}
+
+{% block scripts %}
+	<script src="/static/markov.js"></script>
+{% endblock scripts %}
+
+{% block content %}
+	<a href="/">stats</a>
+
+	<div id="simulation">
+	</div>
+{% endblock content %}

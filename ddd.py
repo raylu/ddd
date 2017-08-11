@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# pylint: disable=wrong-import-position,ungrouped-imports
+# pylint: disable=wrong-import-order,wrong-import-position,ungrouped-imports
 
 import sys
 if len(sys.argv) == 1: # dev
@@ -10,14 +10,14 @@ if len(sys.argv) == 1: # dev
 import eventlet
 eventlet.monkey_patch()
 
+import random
+
 import eventlet.wsgi
+import markovify
 from pigwig import PigWig, Response
-import sqlalchemy
-from sqlalchemy import Column, Integer, String
-import sqlalchemy.ext.declarative
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import func
 
+from db import Session, Channels, Users, Messages, top_15_usernames
 
 def root(request):
 	return Response.render(request, 'index.html', {})
@@ -108,6 +108,18 @@ def _filter(query, qs):
 		query = query.filter(Messages.user_id == int(qs['user_id']))
 	return query
 
+def markov_page(request):
+	return Response.render(request, 'markov.html', {})
+
+with open('markov.json', 'r') as f:
+	markov_model = markovify.Text.from_json(f.read())
+usernames = top_15_usernames()
+def markov_line(request):
+	max_len = random.randint(75, 150)
+	line = markov_model.make_short_sentence(max_len)
+	username = random.choice(usernames)
+	return Response.json({'username': username, 'line': line})
+
 routes = [
 	('GET', '/', root),
 	('GET', '/channel_user_list.json', channel_user_list),
@@ -115,33 +127,15 @@ routes = [
 	('GET', '/by_hour.json', by_hour),
 	('GET', '/by_user.json', by_user),
 	('GET', '/by_channel.json', by_channel),
+
+	('GET', '/markov', markov_page),
+	('GET', '/markov.json', markov_line),
 ]
 
 def response_done(request, response):
 	Session.remove()
 
 app = PigWig(routes, template_dir='templates', response_done_handler=response_done)
-
-engine = sqlalchemy.create_engine('sqlite:///ddd.db')
-Session = scoped_session(sessionmaker(bind=engine))
-Base = sqlalchemy.ext.declarative.declarative_base()
-
-class Channels(Base):
-	__tablename__ = 'channels'
-	channel_id = Column(Integer, primary_key=True)
-	name = Column(String)
-
-class Users(Base):
-	__tablename__ = 'users'
-	user_id = Column(Integer, primary_key=True)
-	name = Column(String)
-
-class Messages(Base):
-	__tablename__ = 'messages'
-	channel_id = Column(Integer, primary_key=True)
-	user_id = Column(Integer, primary_key=True)
-	hour = Column(Integer, primary_key=True)
-	count = Column(Integer)
 
 if __name__ == '__main__':
 	port = 8000

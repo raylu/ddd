@@ -1,3 +1,4 @@
 eventlet
 jinja2
+markovify
 pigwig
