@@ -18,7 +18,7 @@ def main():
 				iter_users('raw/users.csv'))
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
-	for row in iter_rows('raw/messages.csv.xz'):
+	for row in iter_rows('raw/messages.csv.lzma'):
 		channel_id = int(row['channel_id'])
 		user_id = int(row['user_id'])
 		dt = snowflake_dt(int(row['message_id']))

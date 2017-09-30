@@ -23,7 +23,7 @@ def prepare_model():
 	user_ids = db.top_15_user_ids()
 
 	content = ''
-	for row in prepare_db.iter_rows('raw/messages.csv.xz'):
+	for row in prepare_db.iter_rows('raw/messages.csv.lzma'):
 		if row['user_id'] in user_ids:
 			content += row['content'] + '\n'
 
