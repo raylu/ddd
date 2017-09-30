@@ -10,14 +10,14 @@ if len(sys.argv) == 1: # dev
 import eventlet
 eventlet.monkey_patch()
 
-import random
+#import random
 
 import eventlet.wsgi
-import markovify
+#import markovify
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 
-from db import Session, Channels, Users, Messages, top_usernames
+from db import Session, Channels, Users, Messages#, top_usernames
 
 def root(request):
 	return Response.render(request, 'index.html', {})
@@ -111,6 +111,7 @@ def _filter(query, qs):
 def markov_page(request):
 	return Response.render(request, 'markov.html', {})
 
+# pylint: disable=pointless-string-statement
 '''
 with open('markov.json', 'r') as f:
 	markov_model = markovify.Text.from_json(f.read())
