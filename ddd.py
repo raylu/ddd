@@ -17,7 +17,7 @@ import markovify
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 
-from db import Session, Channels, Users, Messages, top_15_usernames
+from db import Session, Channels, Users, Messages, top_usernames
 
 def root(request):
 	return Response.render(request, 'index.html', {})
@@ -113,7 +113,7 @@ def markov_page(request):
 
 with open('markov.json', 'r') as f:
 	markov_model = markovify.Text.from_json(f.read())
-usernames = top_15_usernames()
+usernames = top_usernames()
 def markov_line(request):
 	max_len = random.randint(75, 150)
 	line = markov_model.make_short_sentence(max_len)

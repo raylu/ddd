@@ -20,7 +20,7 @@ def main(argv):
 			print(model.make_short_sentence(max_len))
 
 def prepare_model():
-	user_ids = db.top_15_user_ids()
+	user_ids = db.top_user_ids()
 
 	content = ''
 	for row in prepare_db.iter_rows('raw/messages.csv.lzma'):

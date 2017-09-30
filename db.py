@@ -25,26 +25,28 @@ class Messages(Base):
 	hour = Column(Integer, primary_key=True)
 	count = Column(Integer)
 
-def top_15_user_ids():
+TOP_USER_COUNT = 5
+
+def top_user_ids():
 	session = Session()
 
 	query = session.query(Messages) \
 			.with_entities(Messages.user_id) \
 			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
-	query = query.limit(15)
+	query = query.limit(TOP_USER_COUNT)
 
 	user_ids = set()
 	for row in query:
 		user_ids.add(str(row.user_id))
 	return user_ids
 
-def top_15_usernames():
+def top_usernames():
 	session = Session()
 	query = session.query(Messages) \
 			.with_entities(Messages.user_id, Users.name) \
 			.outerjoin(Users, Messages.user_id == Users.user_id) \
 			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
-	query = query.limit(15)
+	query = query.limit(TOP_USER_COUNT)
 
 	usernames = []
 	for row in query:
