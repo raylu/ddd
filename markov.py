@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import random
+import datetime
 import sys
 
 import markovify
@@ -16,15 +16,15 @@ def main(argv):
 		with open('markov.json', 'r') as f:
 			model = markovify.Text.from_json(f.read())
 		for _ in range(5):
-			max_len = random.randint(75, 150)
-			print(model.make_short_sentence(max_len))
+			print(model.make_short_sentence(150))
 
 def prepare_model():
 	user_ids = db.top_user_ids()
 
+	cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=30)
 	content = ''
 	for row in prepare_db.iter_rows('raw/messages.csv.lzma'):
-		if row['user_id'] in user_ids:
+		if row['user_id'] in user_ids and prepare_db.snowflake_dt(int(row['message_id'])) > cutoff:
 			content += row['content'] + '\n'
 
 	text_model = markovify.Text(content, state_size=3)

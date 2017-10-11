@@ -1,3 +1,5 @@
+import time
+
 import sqlalchemy
 from sqlalchemy import Column, Integer, String
 import sqlalchemy.ext.declarative
@@ -25,13 +27,14 @@ class Messages(Base):
 	hour = Column(Integer, primary_key=True)
 	count = Column(Integer)
 
-TOP_USER_COUNT = 5
+TOP_USER_COUNT = 15
 
 def top_user_ids():
 	session = Session()
 
 	query = session.query(Messages) \
 			.with_entities(Messages.user_id) \
+			.filter(Messages.hour > time.time() - 30 * 24 * 60 * 60) \
 			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
 	query = query.limit(TOP_USER_COUNT)
 
@@ -45,6 +48,7 @@ def top_usernames():
 	query = session.query(Messages) \
 			.with_entities(Messages.user_id, Users.name) \
 			.outerjoin(Users, Messages.user_id == Users.user_id) \
+			.filter(Messages.hour > time.time() - 30 * 24 * 60 * 60) \
 			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
 	query = query.limit(TOP_USER_COUNT)
 

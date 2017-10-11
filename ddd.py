@@ -115,8 +115,7 @@ with open('markov.json', 'r') as f:
 	markov_model = markovify.Text.from_json(f.read())
 usernames = top_usernames()
 def markov_line(request):
-	max_len = random.randint(75, 150)
-	line = markov_model.make_short_sentence(max_len)
+	line = markov_model.make_short_sentence(150)
 	username = random.choice(usernames)
 	return Response.json({'username': username, 'line': line})
 
