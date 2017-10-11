@@ -7,4 +7,4 @@ rm -f raw/messages.csv.lzma
 lzma raw/messages.csv
 
 ./prepare_db.py
-#./markov.py gen
+./markov.py gen

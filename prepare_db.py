@@ -95,7 +95,7 @@ def iter_rows(messages_xz_path):
 		reader = csv.DictReader(f)
 		for i, row in enumerate(reader):
 			yield row
-			if (i + 1) % 10000 == 0:
+			if (i + 1) % 100000 == 0:
 				print('processed', i+1, 'messages')
 
 def iter_counts(counts):
