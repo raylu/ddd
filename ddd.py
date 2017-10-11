@@ -10,6 +10,7 @@ if len(sys.argv) == 1: # dev
 import eventlet
 eventlet.monkey_patch()
 
+import datetime
 import random
 
 import eventlet.wsgi
@@ -17,12 +18,12 @@ import markovify
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 
-from db import Session, Channels, Users, Messages, top_usernames
+from db import Session, Channels, Users, Months, Messages, top_usernames
 
 def root(request):
 	return Response.render(request, 'index.html', {})
 
-def channel_user_list(request):
+def channel_user_month_list(request):
 	session = Session()
 
 	channels = []
@@ -32,7 +33,12 @@ def channel_user_list(request):
 	users = []
 	for row in session.query(Users).order_by(Users.name):
 		users.append({'id': str(row.user_id), 'name': row.name})
-	return Response.json({'channels': channels, 'users': users})
+
+	months = []
+	for row in session.query(Months).order_by(Months.month):
+		months.append(row.month)
+
+	return Response.json({'channels': channels, 'users': users, 'months': months})
 
 def by_month(request):
 	session = Session()
@@ -106,6 +112,11 @@ def _filter(query, qs):
 		query = query.filter(Messages.channel_id == int(qs['channel_id']))
 	if 'user_id' in qs:
 		query = query.filter(Messages.user_id == int(qs['user_id']))
+	if 'month' in qs:
+		start = datetime.datetime.strptime(qs['month'], '%Y-%m').replace(tzinfo=datetime.timezone.utc)
+		end = (start + datetime.timedelta(days=31)).replace(day=1)
+		query = query.filter(start.timestamp() <= Messages.hour)
+		query = query.filter(Messages.hour < end.timestamp())
 	return query
 
 def markov_page(request):
@@ -121,7 +132,7 @@ def markov_line(request):
 
 routes = [
 	('GET', '/', root),
-	('GET', '/channel_user_list.json', channel_user_list),
+	('GET', '/channel_user_month_list.json', channel_user_month_list),
 	('GET', '/by_month.json', by_month),
 	('GET', '/by_hour.json', by_hour),
 	('GET', '/by_user.json', by_user),

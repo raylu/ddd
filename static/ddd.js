@@ -4,15 +4,17 @@ window.addEvent('domready', function() {
 	'use strict';
 
 	new Request.JSON({
-		'url': 'channel_user_list.json',
-		'onSuccess': channelUserList,
+		'url': 'channel_user_month_list.json',
+		'onSuccess': channelUserMonthList,
 	}).get();
 
 	const channelSelect = new MooDropdown($('channel'));
 	const userSelect = new MooDropdown($('user'));
-	MooDropdown.setupClose(channelSelect, userSelect);
+	const monthSelect = new MooDropdown($('month'));
+	MooDropdown.setupClose(channelSelect, userSelect, monthSelect);
 	channelSelect.addOption(null, '(all)');
 	userSelect.addOption(null, '(all)');
+	monthSelect.addOption(null, '(all)');
 
 	function query(initial) {
 		const qs = {};
@@ -20,6 +22,8 @@ window.addEvent('domready', function() {
 			qs['channel_id'] = channelSelect.value;
 		if (userSelect.value)
 			qs['user_id'] = userSelect.value;
+		if (monthSelect.value)
+			qs['month'] = monthSelect.value;
 		if (!initial)
 			history.pushState(qs, '', '?' + Object.toQueryString(qs));
 
@@ -48,15 +52,19 @@ window.addEvent('domready', function() {
 		}).get();
 	}
 
-	function channelUserList(data) {
+	function channelUserMonthList(data) {
 		data['channels'].each((channel) => {
 			channelSelect.addOption(channel['id'], channel['name']);
 		});
 		data['users'].each((user) => {
 			userSelect.addOption(user['id'], user['name']);
 		});
+		data['months'].each((month) => {
+			monthSelect.addOption(month, month);
+		});
 		channelSelect.render();
 		userSelect.render();
+		monthSelect.render();
 
 		const qs = window.location.search.substr(1);
 		const params = {};
@@ -67,9 +75,11 @@ window.addEvent('domready', function() {
 		});
 		channelSelect.select(params['channel_id'] || null);
 		userSelect.select(params['user_id'] || null);
+		monthSelect.select(params['month'] || null);
 
 		channelSelect.addEvent('moodropdown-select', () => {query(false);});
 		userSelect.addEvent('moodropdown-select', () => {query(false);});
+		monthSelect.addEvent('moodropdown-select', () => {query(false);});
 
 		query(true);
 	}

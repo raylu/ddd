@@ -20,6 +20,11 @@ class Users(Base):
 	user_id = Column(Integer, primary_key=True)
 	name = Column(String)
 
+class Months(Base):
+	__tablename__ = 'months'
+	ROWID = Column(Integer, primary_key=True)
+	month = Column(String)
+
 class Messages(Base):
 	__tablename__ = 'messages'
 	channel_id = Column(Integer, primary_key=True)

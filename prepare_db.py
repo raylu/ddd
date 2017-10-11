@@ -18,6 +18,7 @@ def main():
 				iter_users('raw/users.csv'))
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
+	months = set()
 	for row in iter_rows('raw/messages.csv.lzma'):
 		channel_id = int(row['channel_id'])
 		user_id = int(row['user_id'])
@@ -25,7 +26,15 @@ def main():
 		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
 		counts[channel_id][user_id][hour] += 1
 
+		month = dt.date().replace(day=1)
+		months.add(month)
+
+	month_rows = []
+	for month in sorted(months):
+		month_rows.append((month.strftime('%Y-%m'),))
+
 	with conn:
+		conn.executemany('INSERT INTO months (month) VALUES(?)', month_rows)
 		conn.executemany('INSERT INTO messages (channel_id, user_id, hour, count) VALUES(?, ?, ?, ?)',
 				iter_counts(counts))
 
@@ -45,6 +54,11 @@ def prepare_db():
 			CREATE TABLE users (
 				user_id INTEGER PRIMARY KEY,
 				name TEXT
+			)
+		''')
+		conn.execute('''
+			CREATE TABLE months (
+				month TEXT
 			)
 		''')
 		conn.execute('''
