@@ -22,7 +22,7 @@ def main():
 		channel_id = int(row['channel_id'])
 		user_id = int(row['user_id'])
 		dt = snowflake_dt(int(row['message_id']))
-		hour = dt.replace(minute=0, second=0).timestamp()
+		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
 		counts[channel_id][user_id][hour] += 1
 
 	with conn:
