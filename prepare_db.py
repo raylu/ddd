@@ -9,13 +9,11 @@ from os import path
 import sqlite3
 import sys
 
-verbose = True
-
 def main():
-	global verbose
+	verbose = True
 	if len(sys.argv) == 2 and sys.argv[1] == '-q':
 		verbose = False
-	conn = prepare_db()
+	conn = prepare_db(verbose)
 
 	with conn:
 		conn.executemany('INSERT INTO channels (channel_id, name) VALUES(?, ?)',
@@ -25,7 +23,7 @@ def main():
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
-	for row in iter_rows('raw/messages.csv.lzma'):
+	for row in iter_rows('raw/messages.csv.lzma', verbose):
 		channel_id = int(row['channel_id'])
 		user_id = int(row['user_id'])
 		dt = snowflake_dt(int(row['message_id']))
@@ -44,7 +42,7 @@ def main():
 		conn.executemany('INSERT INTO messages (channel_id, user_id, hour, count) VALUES(?, ?, ?, ?)',
 				iter_counts(counts))
 
-def prepare_db():
+def prepare_db(verbose):
 	if path.exists('ddd.db'):
 		if verbose:
 			print('deleting ddd.db')
@@ -97,7 +95,7 @@ def iter_users(users_path):
 			user_id = int(row['user_id'])
 			yield (user_id, row['name'])
 
-def iter_rows(messages_xz_path):
+def iter_rows(messages_xz_path, verbose):
 	with lzma.open(messages_xz_path, 'rt', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for i, row in enumerate(reader):
