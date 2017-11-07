@@ -7,8 +7,14 @@ import lzma
 import os
 from os import path
 import sqlite3
+import sys
+
+verbose = True
 
 def main():
+	global verbose
+	if len(sys.argv) == 2 and sys.argv[1] == '-q':
+		verbose = False
 	conn = prepare_db()
 
 	with conn:
@@ -40,7 +46,8 @@ def main():
 
 def prepare_db():
 	if path.exists('ddd.db'):
-		print('deleting ddd.db')
+		if verbose:
+			print('deleting ddd.db')
 		os.unlink('ddd.db')
 	conn = sqlite3.connect('ddd.db')
 	with conn:
@@ -95,7 +102,7 @@ def iter_rows(messages_xz_path):
 		reader = csv.DictReader(f)
 		for i, row in enumerate(reader):
 			yield row
-			if (i + 1) % 100000 == 0:
+			if verbose and (i + 1) % 100000 == 0:
 				print('processed', i+1, 'messages')
 
 def iter_counts(counts):

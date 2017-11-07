@@ -11,7 +11,6 @@ import prepare_db
 def main(argv):
 	if len(argv) == 2 and argv[1] == 'gen':
 		prepare_model()
-		print('wrote to markov.json')
 	else:
 		with open('markov.json', 'r') as f:
 			model = markovify.Text.from_json(f.read())
@@ -23,6 +22,7 @@ def prepare_model():
 
 	cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=30)
 	content = ''
+	prepare_db.verbose = False
 	for row in prepare_db.iter_rows('raw/messages.csv.lzma'):
 		if row['user_id'] in user_ids and prepare_db.snowflake_dt(int(row['message_id'])) > cutoff:
 			content += row['content'] + '\n'
