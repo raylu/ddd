@@ -18,12 +18,12 @@ def main(argv):
 			print(model.make_short_sentence(150))
 
 def prepare_model():
-	user_ids = db.top_user_ids()
+	user_ids = db.top_int_user_ids()
 
 	cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=30)
 	content = ''
 	for row in prepare_db.iter_rows('raw/messages.csv.lzma', False):
-		if row['user_id'] in user_ids and prepare_db.snowflake_dt(int(row['message_id'])) > cutoff:
+		if row['int_user_id'] in user_ids and prepare_db.snowflake_dt(int(row['message_id'])) > cutoff:
 			content += row['content'] + '\n'
 
 	text_model = markovify.Text(content, state_size=3)

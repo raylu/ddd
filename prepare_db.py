@@ -18,17 +18,17 @@ def main():
 	with conn:
 		conn.executemany('INSERT INTO channels (channel_id, name) VALUES(?, ?)',
 				iter_channels('raw/channels.csv'))
-		conn.executemany('INSERT INTO users (user_id, name) VALUES(?, ?)',
+		conn.executemany('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
 				iter_users('raw/users.csv'))
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
 	for row in iter_rows('raw/messages.csv.lzma', verbose):
 		channel_id = int(row['channel_id'])
-		user_id = int(row['user_id'])
+		int_user_id = int(row['int_user_id'])
 		dt = snowflake_dt(int(row['message_id']))
 		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
-		counts[channel_id][user_id][hour] += 1
+		counts[channel_id][int_user_id][hour] += 1
 
 		month = dt.date().replace(day=1)
 		months.add(month)
@@ -39,7 +39,7 @@ def main():
 
 	with conn:
 		conn.executemany('INSERT INTO months (month) VALUES(?)', month_rows)
-		conn.executemany('INSERT INTO messages (channel_id, user_id, hour, count) VALUES(?, ?, ?, ?)',
+		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
 				iter_counts(counts))
 
 def prepare_db(verbose):
@@ -57,7 +57,8 @@ def prepare_db(verbose):
 		''')
 		conn.execute('''
 			CREATE TABLE users (
-				user_id INTEGER PRIMARY KEY,
+				int_user_id INTEGER PRIMARY KEY,
+				real_user_id INTEGER,
 				name TEXT
 			)
 		''')
@@ -69,14 +70,14 @@ def prepare_db(verbose):
 		conn.execute('''
 			CREATE TABLE messages (
 				channel_id INTEGER,
-				user_id INTEGER,
+				int_user_id INTEGER,
 				hour INTEGER,
 				count INTEGER
 			)
 		''')
 		conn.execute('''
 			CREATE UNIQUE INDEX channel_user_hour ON messages
-			(channel_id, user_id, hour)
+			(channel_id, int_user_id, hour)
 		''')
 
 	return conn
@@ -92,8 +93,9 @@ def iter_users(users_path):
 	with open(users_path, 'r') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
-			user_id = int(row['user_id'])
-			yield (user_id, row['name'])
+			int_user_id = int(row['int_user_id'])
+			real_user_id = int(row['real_user_id'])
+			yield (int_user_id, real_user_id, row['name'])
 
 def iter_rows(messages_xz_path, verbose):
 	with lzma.open(messages_xz_path, 'rt', encoding='utf-8') as f:
@@ -105,9 +107,9 @@ def iter_rows(messages_xz_path, verbose):
 
 def iter_counts(counts):
 	for channel_id, user_counts in counts.items():
-		for user_id, hour_counts in user_counts.items():
+		for int_user_id, hour_counts in user_counts.items():
 			for hour, count in hour_counts.items():
-				yield (channel_id, user_id, hour, count)
+				yield (channel_id, int_user_id, hour, count)
 
 DISCORD_EPOCH = 1420070400000
 def snowflake_dt(snowflake):
