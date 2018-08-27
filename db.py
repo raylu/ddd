@@ -17,7 +17,8 @@ class Channels(Base):
 
 class Users(Base):
 	__tablename__ = 'users'
-	user_id = Column(Integer, primary_key=True)
+	int_user_id = Column(Integer, primary_key=True)
+	real_user_id = Column(Integer)
 	name = Column(String)
 
 class Months(Base):
@@ -28,7 +29,7 @@ class Months(Base):
 class Messages(Base):
 	__tablename__ = 'messages'
 	channel_id = Column(Integer, primary_key=True)
-	user_id = Column(Integer, primary_key=True)
+	int_user_id = Column(Integer, primary_key=True)
 	hour = Column(Integer, primary_key=True)
 	count = Column(Integer)
 
@@ -38,26 +39,26 @@ def top_user_ids():
 	session = Session()
 
 	query = session.query(Messages) \
-			.with_entities(Messages.user_id) \
+			.with_entities(Messages.int_user_id) \
 			.filter(Messages.hour > time.time() - 30 * 24 * 60 * 60) \
-			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
+			.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
 	query = query.limit(TOP_USER_COUNT)
 
 	user_ids = set()
 	for row in query:
-		user_ids.add(str(row.user_id))
+		user_ids.add(str(row.int_user_id))
 	return user_ids
 
 def top_usernames():
 	session = Session()
 	query = session.query(Messages) \
-			.with_entities(Messages.user_id, Users.name) \
-			.outerjoin(Users, Messages.user_id == Users.user_id) \
+			.with_entities(Messages.int_user_id, Users.name) \
+			.outerjoin(Users, Messages.int_user_id == Users.int_user_id) \
 			.filter(Messages.hour > time.time() - 30 * 24 * 60 * 60) \
-			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
+			.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
 	query = query.limit(TOP_USER_COUNT)
 
 	usernames = []
 	for row in query:
-		usernames.append(row.name or str(row.user_id))
+		usernames.append(row.name or str(row.int_user_id))
 	return usernames
