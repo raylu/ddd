@@ -32,7 +32,7 @@ def channel_user_month_list(request):
 
 	users = []
 	for row in session.query(Users).order_by(Users.name):
-		users.append({'id': str(row.user_id), 'name': row.name})
+		users.append({'id': str(row.int_user_id), 'name': row.name})
 
 	months = []
 	for row in session.query(Months).order_by(Months.month):
@@ -72,16 +72,16 @@ def by_user(request):
 	total = _filter(query, request.query).scalar()
 
 	query = session.query(Messages) \
-			.with_entities(Messages.user_id, Users.name, func.sum(Messages.count).label('count')) \
-			.outerjoin(Users, Messages.user_id == Users.user_id) \
-			.group_by(Messages.user_id).order_by(func.sum(Messages.count).desc())
+			.with_entities(Messages.int_user_id, Users.name, func.sum(Messages.count).label('count')) \
+			.outerjoin(Users, Messages.int_user_id == Users.int_user_id) \
+			.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
 	query = _filter(query, request.query)
 	query = query.limit(50)
 
 	data = []
 	for row in query:
 		data.append({
-			'name': row.name or str(row.user_id),
+			'name': row.name or str(row.real_user_id),
 			'count': row.count,
 			'percentage': float('%.2f' % (row.count / total * 100)),
 		})
@@ -110,8 +110,8 @@ def by_channel(request):
 def _filter(query, qs):
 	if 'channel_id' in qs:
 		query = query.filter(Messages.channel_id == int(qs['channel_id']))
-	if 'user_id' in qs:
-		query = query.filter(Messages.user_id == int(qs['user_id']))
+	if 'int_user_id' in qs:
+		query = query.filter(Messages.int_user_id == int(qs['int_user_id']))
 	if 'month' in qs:
 		start = datetime.datetime.strptime(qs['month'], '%Y-%m').replace(tzinfo=datetime.timezone.utc)
 		end = (start + datetime.timedelta(days=31)).replace(day=1)

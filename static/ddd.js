@@ -21,7 +21,7 @@ window.addEvent('domready', function() {
 		if (channelSelect.value)
 			qs['channel_id'] = channelSelect.value;
 		if (userSelect.value)
-			qs['user_id'] = userSelect.value;
+			qs['int_user_id'] = userSelect.value;
 		if (monthSelect.value)
 			qs['month'] = monthSelect.value;
 		if (!initial)
@@ -74,7 +74,7 @@ window.addEvent('domready', function() {
 			params[key] = decodeURIComponent(val);
 		});
 		channelSelect.select(params['channel_id'] || null);
-		userSelect.select(params['user_id'] || null);
+		userSelect.select(params['int_user_id'] || null);
 		monthSelect.select(params['month'] || null);
 
 		channelSelect.addEvent('moodropdown-select', () => {query(false);});
