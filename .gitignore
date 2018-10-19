@@ -1,5 +1,6 @@
 /__pycache__/
 /raw/
 /node_modules/
+/config.py
 /ddd.db
 /markov.json

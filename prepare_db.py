@@ -9,6 +9,10 @@ from os import path
 import sqlite3
 import sys
 
+import lz4framed
+
+import config
+
 def main():
 	verbose = True
 	if len(sys.argv) == 2 and sys.argv[1] == '-q':
@@ -16,31 +20,46 @@ def main():
 	conn = prepare_db(verbose)
 
 	with conn:
-		conn.executemany('INSERT INTO channels (channel_id, name) VALUES(?, ?)',
-				iter_channels('raw/channels.csv'))
+		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
+				iter_channels())
+		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
+				iter_programming_channels('raw/channels.csv'))
+
+	with conn:
 		conn.executemany('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
-				iter_users('raw/users.csv'))
+				iter_users())
+		for user_args in iter_programming_users('raw/users.csv'):
+			try:
+				conn.execute('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
+						user_args)
+			except sqlite3.IntegrityError:
+				if verbose:
+					print('duplicate user', *user_args)
+
+	channel_ids = {}
+	for guild_id, channel_id, name in iter_channels():
+		channel_ids[name] = channel_id
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
-	for row in iter_rows('raw/messages.csv.lzma', verbose):
-		channel_id = int(row['channel_id'])
-		int_user_id = int(row['int_user_id'])
-		dt = snowflake_dt(int(row['message_id']))
+	for row in iter_rows(channel_ids, 'raw/messages.csv.lzma', verbose):
+		channel_id, int_user_id, message_id = row
+		dt = snowflake_dt(message_id)
 		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
 		counts[channel_id][int_user_id][hour] += 1
 
 		month = dt.date().replace(day=1)
 		months.add(month)
 
+	with conn:
+		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
+				iter_counts(counts))
+
 	month_rows = []
 	for month in sorted(months):
 		month_rows.append((month.strftime('%Y-%m'),))
-
 	with conn:
 		conn.executemany('INSERT INTO months (month) VALUES(?)', month_rows)
-		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
-				iter_counts(counts))
 
 def prepare_db(verbose):
 	if path.exists('ddd.db'):
@@ -52,6 +71,7 @@ def prepare_db(verbose):
 		conn.execute('''
 			CREATE TABLE channels (
 				channel_id INTEGER PRIMARY KEY,
+				guild_id INTEGER,
 				name TEXT
 			)
 		''')
@@ -82,14 +102,28 @@ def prepare_db(verbose):
 
 	return conn
 
-def iter_channels(channels_path):
+def iter_channels():
+	with open(path.join(config.log_dir, 'channels'), 'rb') as f:
+		for line in f:
+			guild_id, channel_id, name = line.rstrip(b'\n').split(b'|', 2)
+			yield (int(guild_id), int(channel_id), name.decode('utf-8'))
+
+def iter_programming_channels(channels_path):
+	programming_guild_id = 181866934353133570
 	with open(channels_path, 'r') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
 			channel_id = int(row['channel_id'])
-			yield (channel_id, row['name'])
+			yield (programming_guild_id, channel_id, row['name'])
 
-def iter_users(users_path):
+def iter_users():
+	with open(path.join(config.log_dir, 'users'), 'rb') as f:
+		for line in f:
+			user_id, username = line.rstrip(b'\n').split(b'|', 1)
+			user_id = int(user_id)
+			yield (user_id, user_id, username.decode('utf-8'))
+
+def iter_programming_users(users_path):
 	with open(users_path, 'r') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
@@ -97,11 +131,33 @@ def iter_users(users_path):
 			real_user_id = int(row['real_user_id'])
 			yield (int_user_id, real_user_id, row['name'])
 
-def iter_rows(messages_xz_path, verbose):
+def iter_rows(channel_ids, messages_xz_path, verbose):
+	for guild in os.listdir(config.log_dir):
+		guild_path = path.join(config.log_dir, guild)
+		if not path.isdir(guild_path):
+			continue
+		for channel in os.listdir(guild_path):
+			print('processing', guild, '-', channel)
+			channel_id = channel_ids[channel]
+			channel_path = path.join(guild_path, channel)
+			for day_file in os.listdir(channel_path):
+				with open(path.join(channel_path, day_file), 'rb') as f:
+					compressed = f.read()
+				contents = lz4framed.decompress(compressed)
+				lines = contents.split(b'\0')
+				for line in lines:
+					if line == b'':
+						continue
+					message_id, time, user_id, content = line.split(b'|', 3)
+					yield channel_id, int(user_id), int(message_id)
+
 	with lzma.open(messages_xz_path, 'rt', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for i, row in enumerate(reader):
-			yield row
+			channel_id = row['channel_id']
+			int_user_id = row['int_user_id']
+			message_id = row['message_id']
+			yield int(channel_id), int(int_user_id), int(message_id)
 			if verbose and (i + 1) % 100000 == 0:
 				print('processed', i+1, 'messages')
 
