@@ -3,3 +3,4 @@ jinja2
 py-lz4framed
 markovify
 pigwig
+sqlalchemy

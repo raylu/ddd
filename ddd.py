@@ -23,11 +23,14 @@ from db import Session, Channels, Users, Months, Messages, top_usernames
 def root(request):
 	return Response.render(request, 'index.html', {})
 
-def channel_user_month_list(request):
+def guild(request, guild_id):
+	return Response.render(request, 'guild.html', {})
+
+def channel_user_month_list(request, guild_id):
 	session = Session()
 
 	channels = []
-	for row in session.query(Channels).order_by(Channels.name):
+	for row in session.query(Channels).filter(Channels.guild_id==guild_id).order_by(Channels.name):
 		channels.append({'id': str(row.channel_id), 'name': row.name})
 
 	users = []
@@ -40,7 +43,7 @@ def channel_user_month_list(request):
 
 	return Response.json({'channels': channels, 'users': users, 'months': months})
 
-def by_month(request):
+def by_month(request, guild_id):
 	session = Session()
 	query = session.query(Messages) \
 			.with_entities(func.strftime('%Y-%m', Messages.hour, 'unixepoch').label('month'),
@@ -53,7 +56,7 @@ def by_month(request):
 		data.append({'month': row.month, 'count': row.count})
 	return Response.json(data)
 
-def by_hour(request):
+def by_hour(request, guild_id):
 	session = Session()
 	query = session.query(Messages) \
 			.with_entities(func.strftime('%H', Messages.hour, 'unixepoch').label('agg_hour'),
@@ -66,7 +69,7 @@ def by_hour(request):
 		data.append({'hour': row.agg_hour, 'count': row.count})
 	return Response.json(data)
 
-def by_user(request):
+def by_user(request, guild_id):
 	session = Session()
 	query = session.query(func.sum(Messages.count))
 	total = _filter(query, request.query).scalar()
@@ -87,7 +90,7 @@ def by_user(request):
 		})
 	return Response.json(data)
 
-def by_channel(request):
+def by_channel(request, guild_id):
 	session = Session()
 	query = session.query(func.sum(Messages.count))
 	total = _filter(query, request.query).scalar()
@@ -132,14 +135,15 @@ def markov_line(request):
 
 routes = [
 	('GET', '/', root),
-	('GET', '/channel_user_month_list.json', channel_user_month_list),
-	('GET', '/by_month.json', by_month),
-	('GET', '/by_hour.json', by_hour),
-	('GET', '/by_user.json', by_user),
-	('GET', '/by_channel.json', by_channel),
+	('GET', '/guild/<guild_id>/', guild),
+	('GET', '/guild/<guild_id>/channel_user_month_list.json', channel_user_month_list),
+	('GET', '/guild/<guild_id>/by_month.json', by_month),
+	('GET', '/guild/<guild_id>/by_hour.json', by_hour),
+	('GET', '/guild/<guild_id>/by_user.json', by_user),
+	('GET', '/guild/<guild_id>/by_channel.json', by_channel),
 
-	('GET', '/markov', markov_page),
-	('GET', '/markov.json', markov_line),
+	('GET', '/guild/<guild_id>/markov', markov_page),
+	('GET', '/guild/<guild_id>/markov.json', markov_line),
 ]
 
 def response_done(request, response):

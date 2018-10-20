@@ -1,58 +1,6 @@
 {% extends 'base.html' %}
 
-{% block head %}
-	<link rel="stylesheet" href="/static/dropdown.css">
-{% endblock head %}
-
-{% block scripts %}
-	<script src="/static/dropdown.js"></script>
-	<script src="/static/ddd.js"></script>
-{% endblock scripts %}
-
 {% block content %}
-	<a href="/markov">markov simulation</a>
-
-	<p>
-	<form>
-		channel: <div id="channel"></div>
-		user: <div id="user"></div>
-		month: <div id="month"></div>
-	</form>
-	</p>
-
-	<h2>by month:</h2>
-	<table id="by_month">
-		<th>month</th>
-		<th>messages</th>
-		<th></th>
-	</table>
-
-	<h2>by hour (UTC):</h2>
-	<table id="by_hour">
-		<th>hour</th>
-		<th>messages</th>
-		<th></th>
-	</table>
-
-	<h2>by user:</h2>
-	<table id="by_user">
-		<th>rank</th>
-		<th>user</th>
-		<th>messages</th>
-		<th>percentage</th>
-		<th><div class="bar filler header"></div></th>
-		<th></th>
-	</table>
-
-	<h2>by channel:</h2>
-	<table id="by_channel">
-		<th>rank</th>
-		<th>user</th>
-		<th>messages</th>
-		<th>percentage</th>
-		<th></th>
-	</table>
-
 	<p>
 		<a href="https://github.com/raylu/ddd" class="github">github.com/raylu/ddd</a>
 	</p>

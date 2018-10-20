@@ -6,6 +6,7 @@ window.addEvent('domready', function() {
 	new Request.JSON({
 		'url': 'channel_user_month_list.json',
 		'onSuccess': channelUserMonthList,
+		'onError': (text, err) => { console.error(err); }, // eslint-disable-line no-console
 	}).get();
 
 	const channelSelect = new MooDropdown($('channel'));
