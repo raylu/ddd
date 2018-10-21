@@ -156,7 +156,8 @@ def iter_rows(channel_ids, messages_xz_path, verbose):
 		if not path.isdir(guild_path):
 			continue
 		for channel in os.listdir(guild_path):
-			print('processing', guild, '-', channel)
+			if verbose:
+				print('processing', guild, '-', channel)
 			channel_id = channel_ids[channel]
 			channel_path = path.join(guild_path, channel)
 			for day_file in os.listdir(channel_path):
@@ -168,7 +169,7 @@ def iter_rows(channel_ids, messages_xz_path, verbose):
 					if line == b'':
 						continue
 					message_id, time, user_id, content = line.split(b'|', 3)
-					yield channel_id, int(user_id), int(message_id)
+					yield channel_id, int(user_id), int(message_id), content.decode('utf-8')
 
 	with lzma.open(messages_xz_path, 'rt', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
@@ -176,7 +177,7 @@ def iter_rows(channel_ids, messages_xz_path, verbose):
 			channel_id = row['channel_id']
 			int_user_id = row['int_user_id']
 			message_id = row['message_id']
-			yield int(channel_id), int(int_user_id), int(message_id)
+			yield int(channel_id), int(int_user_id), int(message_id), row['content']
 			if verbose and (i + 1) % 100000 == 0:
 				print('processed', i+1, 'messages')
 

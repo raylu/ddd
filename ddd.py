@@ -11,6 +11,8 @@ import eventlet
 eventlet.monkey_patch()
 
 import datetime
+import os
+from os import path
 import random
 
 import eventlet.wsgi
@@ -127,14 +129,19 @@ def _filter(query, guild_id, qs):
 		query = query.filter(Messages.hour < end.timestamp())
 	return query
 
-def markov_page(request):
-	return Response.render(request, 'markov.html', {})
+def markov_page(request, guild_id):
+	return Response.render(request, 'markov.html', {'guild_id': guild_id})
 
-with open('markov.json', 'r') as f:
-	markov_model = markovify.Text.from_json(f.read())
+markov_models = {}
+for model_file in os.listdir('markov'):
+	if not model_file.endswith('.json'):
+		continue
+	guild_id = int(model_file[:-5])
+	with open(path.join('markov', model_file), 'r') as f:
+		markov_models[guild_id] = markovify.Text.from_json(f.read())
 usernames = top_usernames()
-def markov_line(request):
-	line = markov_model.make_short_sentence(150)
+def markov_line(request, guild_id):
+	line = markov_models[int(guild_id)].make_short_sentence(150)
 	username = random.choice(usernames)
 	return Response.json({'username': username, 'line': line})
 

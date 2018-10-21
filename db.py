@@ -43,17 +43,24 @@ TOP_USER_COUNT = 15
 
 def top_int_user_ids():
 	session = Session()
+	top = {}
+	for guild in session.query(Guilds).with_entities(Guilds.guild_id):
+		query = session.query(Messages) \
+				.with_entities(Messages.int_user_id) \
+				.join(Channels, Messages.channel_id == Channels.channel_id) \
+				.filter(
+					Channels.guild_id == guild.guild_id,
+					Messages.hour > time.time() - 30 * 24 * 60 * 60
+				) \
+				.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
+		query = query.limit(TOP_USER_COUNT)
 
-	query = session.query(Messages) \
-			.with_entities(Messages.int_user_id) \
-			.filter(Messages.hour > time.time() - 30 * 24 * 60 * 60) \
-			.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
-	query = query.limit(TOP_USER_COUNT)
+		user_ids = set()
+		for row in query:
+			user_ids.add(row.int_user_id)
+		top[guild.guild_id] = user_ids
 
-	user_ids = set()
-	for row in query:
-		user_ids.add(str(row.int_user_id))
-	return user_ids
+	return top
 
 def top_usernames():
 	session = Session()
