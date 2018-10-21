@@ -51,7 +51,7 @@ def by_month(request, guild_id):
 			.with_entities(func.strftime('%Y-%m', Messages.hour, 'unixepoch').label('month'),
 					func.sum(Messages.count).label('count')) \
 			.group_by('month').order_by('month')
-	query = _filter(query, request.query)
+	query = _filter(query, int(guild_id), request.query)
 
 	data = []
 	for row in query:
@@ -64,7 +64,7 @@ def by_hour(request, guild_id):
 			.with_entities(func.strftime('%H', Messages.hour, 'unixepoch').label('agg_hour'),
 					func.sum(Messages.count).label('count')) \
 			.group_by('agg_hour').order_by('agg_hour')
-	query = _filter(query, request.query)
+	query = _filter(query, int(guild_id), request.query)
 
 	data = []
 	for row in query:
@@ -74,13 +74,13 @@ def by_hour(request, guild_id):
 def by_user(request, guild_id):
 	session = Session()
 	query = session.query(func.sum(Messages.count))
-	total = _filter(query, request.query).scalar()
+	total = _filter(query, int(guild_id), request.query).scalar()
 
 	query = session.query(Messages) \
 			.with_entities(Messages.int_user_id, Users.name, func.sum(Messages.count).label('count')) \
 			.outerjoin(Users, Messages.int_user_id == Users.int_user_id) \
 			.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
-	query = _filter(query, request.query)
+	query = _filter(query, int(guild_id), request.query)
 	query = query.limit(50)
 
 	data = []
@@ -95,13 +95,13 @@ def by_user(request, guild_id):
 def by_channel(request, guild_id):
 	session = Session()
 	query = session.query(func.sum(Messages.count))
-	total = _filter(query, request.query).scalar()
+	total = _filter(query, int(guild_id), request.query).scalar()
 
 	query = session.query(Messages) \
 			.with_entities(Messages.channel_id, Channels.name, func.sum(Messages.count).label('count')) \
 			.outerjoin(Channels, Messages.channel_id == Channels.channel_id) \
 			.group_by(Channels.channel_id).order_by(func.sum(Messages.count).desc())
-	query = _filter(query, request.query)
+	query = _filter(query, int(guild_id), request.query)
 
 	data = []
 	for row in query:
@@ -112,7 +112,10 @@ def by_channel(request, guild_id):
 		})
 	return Response.json(data)
 
-def _filter(query, qs):
+def _filter(query, guild_id, qs):
+	if Channels not in (mapper.class_ for mapper in query._join_entities):
+		query = query.join(Channels, Messages.channel_id == Channels.channel_id)
+	query = query.filter(Channels.guild_id == guild_id)
 	if 'channel_id' in qs:
 		query = query.filter(Messages.channel_id == int(qs['channel_id']))
 	if 'int_user_id' in qs:
