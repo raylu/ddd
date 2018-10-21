@@ -43,6 +43,8 @@ TOP_USER_COUNT = 15
 
 def top_int_user_ids():
 	session = Session()
+
+	time_threshold = time.time() - 30 * 24 * 60 * 60
 	top = {}
 	for guild in session.query(Guilds).with_entities(Guilds.guild_id):
 		query = session.query(Messages) \
@@ -50,7 +52,7 @@ def top_int_user_ids():
 				.join(Channels, Messages.channel_id == Channels.channel_id) \
 				.filter(
 					Channels.guild_id == guild.guild_id,
-					Messages.hour > time.time() - 30 * 24 * 60 * 60
+					Messages.hour > time_threshold,
 				) \
 				.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
 		query = query.limit(TOP_USER_COUNT)
@@ -64,14 +66,24 @@ def top_int_user_ids():
 
 def top_usernames():
 	session = Session()
-	query = session.query(Messages) \
-			.with_entities(Messages.int_user_id, Users.name) \
-			.outerjoin(Users, Messages.int_user_id == Users.int_user_id) \
-			.filter(Messages.hour > time.time() - 30 * 24 * 60 * 60) \
-			.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
-	query = query.limit(TOP_USER_COUNT)
 
-	usernames = []
-	for row in query:
-		usernames.append(row.name or str(row.int_user_id))
+	time_threshold = time.time() - 30 * 24 * 60 * 60
+	usernames = {}
+	for guild in session.query(Guilds).with_entities(Guilds.guild_id):
+		query = session.query(Messages) \
+				.with_entities(Messages.int_user_id, Users.name) \
+				.outerjoin(Users, Messages.int_user_id == Users.int_user_id) \
+				.join(Channels, Messages.channel_id == Channels.channel_id) \
+				.filter(
+					Channels.guild_id == guild.guild_id,
+					Messages.hour > time_threshold,
+				) \
+				.group_by(Messages.int_user_id).order_by(func.sum(Messages.count).desc())
+		query = query.limit(TOP_USER_COUNT)
+
+		guild_usernames = []
+		for row in query:
+			guild_usernames.append(row.name or str(row.int_user_id))
+		usernames[guild.guild_id] = guild_usernames
+
 	return usernames

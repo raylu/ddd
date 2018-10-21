@@ -137,13 +137,14 @@ markov_models = {}
 for model_file in os.listdir('markov'):
 	if not model_file.endswith('.json'):
 		continue
-	guild_id = int(model_file[:-5])
+	_guild_id = int(model_file[:-5])
 	with open(path.join('markov', model_file), 'r') as f:
-		markov_models[guild_id] = markovify.Text.from_json(f.read())
+		markov_models[_guild_id] = markovify.Text.from_json(f.read())
 usernames = top_usernames()
 def markov_line(request, guild_id):
-	line = markov_models[int(guild_id)].make_short_sentence(150)
-	username = random.choice(usernames)
+	guild_id = int(guild_id)
+	line = markov_models[guild_id].make_short_sentence(150)
+	username = random.choice(usernames[guild_id])
 	return Response.json({'username': username, 'line': line})
 
 routes = [

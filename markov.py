@@ -39,17 +39,15 @@ def prepare_model():
 		if int_user_id in user_ids and prepare_db.snowflake_dt(message_id) > cutoff:
 			guild_content[guild_id].write(content + '\n')
 
-	mkdir('markov')
+	try:
+		os.mkdir(path)
+	except FileExistsError:
+		pass
 	for guild_id, stringio in guild_content.items():
 		text_model = markovify.Text(stringio.getvalue(), state_size=3)
 		with open(path.join('markov', '%d.json' % guild_id), 'w') as f:
 			f.write(text_model.to_json())
 
-def mkdir(path):
-	try:
-		os.mkdir(path)
-	except FileExistsError:
-		pass
 
 if __name__ == '__main__':
 	main(sys.argv)
