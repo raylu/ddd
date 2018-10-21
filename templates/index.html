@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
+	<h1>discord data delver</h1>
+
+	<p>
+		{% for guild in guilds %}
+			<a href="/guild/{{ guild.guild_id }}/">{{ guild.name }}</a><br>
+		{% endfor %}
+	</p>
+
 	<p>
 		<a href="https://github.com/raylu/ddd" class="github">github.com/raylu/ddd</a>
 	</p>

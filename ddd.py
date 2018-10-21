@@ -18,19 +18,21 @@ import markovify
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 
-from db import Session, Channels, Users, Months, Messages, top_usernames
+from db import Session, Guilds, Channels, Users, Months, Messages, top_usernames
 
 def root(request):
-	return Response.render(request, 'index.html', {})
+	guilds = Session().query(Guilds).all()
+	return Response.render(request, 'index.html', {'guilds': guilds})
 
-def guild(request, guild_id):
-	return Response.render(request, 'guild.html', {})
+def guild_page(request, guild_id):
+	guild = Session().query(Guilds).get(int(guild_id))
+	return Response.render(request, 'guild.html', {'guild': guild})
 
 def channel_user_month_list(request, guild_id):
 	session = Session()
 
 	channels = []
-	for row in session.query(Channels).filter(Channels.guild_id==guild_id).order_by(Channels.name):
+	for row in session.query(Channels).filter(Channels.guild_id == guild_id).order_by(Channels.name):
 		channels.append({'id': str(row.channel_id), 'name': row.name})
 
 	users = []
@@ -135,7 +137,7 @@ def markov_line(request):
 
 routes = [
 	('GET', '/', root),
-	('GET', '/guild/<guild_id>/', guild),
+	('GET', '/guild/<guild_id>/', guild_page),
 	('GET', '/guild/<guild_id>/channel_user_month_list.json', channel_user_month_list),
 	('GET', '/guild/<guild_id>/by_month.json', by_month),
 	('GET', '/guild/<guild_id>/by_hour.json', by_hour),

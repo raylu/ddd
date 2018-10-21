@@ -10,6 +10,11 @@ engine = sqlalchemy.create_engine('sqlite:///ddd.db')
 Session = scoped_session(sessionmaker(bind=engine))
 Base = sqlalchemy.ext.declarative.declarative_base()
 
+class Guilds(Base):
+	__tablename__ = 'guilds'
+	guild_id = Column(Integer, primary_key=True)
+	name = Column(Unicode)
+
 class Channels(Base):
 	__tablename__ = 'channels'
 	channel_id = Column(Integer, primary_key=True)
