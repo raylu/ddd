@@ -13,11 +13,17 @@ import lz4framed
 
 import config
 
+PROGRAMMING_GUILD_ID = 181866934353133570
+
 def main():
 	verbose = True
 	if len(sys.argv) == 2 and sys.argv[1] == '-q':
 		verbose = False
 	conn = prepare_db(verbose)
+
+	with conn:
+		conn.executemany('INSERT INTO guilds (guild_id, name) VALUES(?, ?)',
+				iter_guilds())
 
 	with conn:
 		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
@@ -69,6 +75,12 @@ def prepare_db(verbose):
 	conn = sqlite3.connect('ddd.db')
 	with conn:
 		conn.execute('''
+			CREATE TABLE guilds (
+				guild_id INTEGER PRIMARY KEY,
+				name TEXT
+			)
+		''')
+		conn.execute('''
 			CREATE TABLE channels (
 				channel_id INTEGER PRIMARY KEY,
 				guild_id INTEGER,
@@ -102,6 +114,14 @@ def prepare_db(verbose):
 
 	return conn
 
+def iter_guilds():
+	with open(path.join(config.log_dir, 'guilds'), 'rb') as f:
+		for line in f:
+			guild_id, name = line.rstrip(b'\n').split(b'|', 2)
+			yield (int(guild_id), name.decode('utf-8'))
+
+	yield (PROGRAMMING_GUILD_ID, 'Programming')
+
 def iter_channels():
 	with open(path.join(config.log_dir, 'channels'), 'rb') as f:
 		for line in f:
@@ -109,12 +129,11 @@ def iter_channels():
 			yield (int(guild_id), int(channel_id), name.decode('utf-8'))
 
 def iter_programming_channels(channels_path):
-	programming_guild_id = 181866934353133570
 	with open(channels_path, 'r') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
 			channel_id = int(row['channel_id'])
-			yield (programming_guild_id, channel_id, row['name'])
+			yield (PROGRAMMING_GUILD_ID, channel_id, row['name'])
 
 def iter_users():
 	with open(path.join(config.log_dir, 'users'), 'rb') as f:
