@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block title %}discord &ndash; {{ guild.name }} &ndash; markov{% endblock title %}
+
 {% block head %}
 	<link rel="stylesheet" href="/static/dropdown.css">
 {% endblock head %}
@@ -9,7 +11,7 @@
 {% endblock scripts %}
 
 {% block content %}
-	<a href="/guild/{{ guild_id }}/">stats</a>
+	<a href="/guild/{{ guild.guild_id }}/">stats</a>
 
 	<div id="simulation">
 	</div>

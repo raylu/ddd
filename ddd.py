@@ -130,7 +130,8 @@ def _filter(query, guild_id, qs):
 	return query
 
 def markov_page(request, guild_id):
-	return Response.render(request, 'markov.html', {'guild_id': guild_id})
+	guild = Session().query(Guilds).get(int(guild_id))
+	return Response.render(request, 'markov.html', {'guild': guild})
 
 markov_models = {}
 for model_file in os.listdir('markov'):
