@@ -43,7 +43,7 @@ def main():
 					print('duplicate user', *user_args)
 
 	channel_ids = {}
-	for guild_id, channel_id, name in iter_channels():
+	for _guild_id, channel_id, name in iter_channels():
 		channel_ids[name] = channel_id
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
@@ -168,7 +168,7 @@ def iter_rows(channel_ids, messages_xz_path, verbose):
 				for line in lines:
 					if line == b'':
 						continue
-					message_id, time, user_id, content = line.split(b'|', 3)
+					message_id, _time, user_id, content = line.split(b'|', 3)
 					yield channel_id, int(user_id), int(message_id), content.decode('utf-8')
 
 	with lzma.open(messages_xz_path, 'rt', encoding='utf-8') as f:
