@@ -49,7 +49,7 @@ def main():
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
 	for row in iter_rows(channel_ids, 'raw/messages.csv.lzma', verbose):
-		channel_id, int_user_id, message_id = row
+		channel_id, int_user_id, message_id, _content = row
 		dt = snowflake_dt(message_id)
 		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
 		counts[channel_id][int_user_id][hour] += 1
