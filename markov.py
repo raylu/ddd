@@ -40,7 +40,7 @@ def prepare_model():
 			guild_content[guild_id].write(content + '\n')
 
 	try:
-		os.mkdir(path)
+		os.mkdir('markov')
 	except FileExistsError:
 		pass
 	for guild_id, stringio in guild_content.items():
