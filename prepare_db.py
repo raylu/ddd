@@ -21,9 +21,11 @@ def main():
 		verbose = False
 	conn = prepare_db(verbose)
 
+	guild_names = {}
+	for guild_id, guild_name in iter_guilds():
+		guild_names[guild_id] = guild_name
 	with conn:
-		conn.executemany('INSERT INTO guilds (guild_id, name) VALUES(?, ?)',
-				iter_guilds())
+		conn.executemany('INSERT INTO guilds (guild_id, name) VALUES(?, ?)', guild_names.items())
 
 	with conn:
 		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
@@ -42,9 +44,10 @@ def main():
 				if verbose:
 					print('duplicate user', *user_args)
 
-	channel_ids = {}
-	for _guild_id, channel_id, name in iter_channels():
-		channel_ids[name] = channel_id
+	channel_ids = defaultdict(dict)
+	for guild_id, channel_id, channel_name in iter_channels():
+		guild_name = guild_names[guild_id]
+		channel_ids[guild_name][channel_name] = channel_id
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
@@ -158,7 +161,7 @@ def iter_rows(channel_ids, messages_xz_path, verbose):
 		for channel in os.listdir(guild_path):
 			if verbose:
 				print('processing', guild, '-', channel)
-			channel_id = channel_ids[channel]
+			channel_id = channel_ids[guild][channel]
 			channel_path = path.join(guild_path, channel)
 			for day_file in os.listdir(channel_path):
 				with open(path.join(channel_path, day_file), 'rb') as f:
