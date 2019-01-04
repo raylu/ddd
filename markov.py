@@ -26,9 +26,12 @@ def prepare_model():
 	guild_ids = dict(db.Session().query(db.Channels)
 			.with_entities(db.Channels.channel_id, db.Channels.guild_id).all())
 
-	channel_ids = {}
+	guild_names = dict(db.Session().query(db.Guilds)
+			.with_entities(db.Guilds.guild_id, db.Guilds.name).all())
+	channel_ids = collections.defaultdict(dict)
 	for guild_id, channel_id, name in prepare_db.iter_channels():
-		channel_ids[name] = channel_id
+		guild_name = guild_names[guild_id]
+		channel_ids[guild_name][name] = channel_id
 
 	cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=30)
 	guild_content = collections.defaultdict(io.StringIO)
