@@ -35,7 +35,7 @@ def prepare_model():
 
 	cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=30)
 	guild_content = collections.defaultdict(io.StringIO)
-	for row in prepare_db.iter_rows(channel_ids, 'raw/messages.csv.lzma', False):
+	for row in prepare_db.iter_rows(channel_ids, False):
 		channel_id, int_user_id, message_id, content = row
 		guild_id = guild_ids[channel_id]
 		user_ids = guild_user_ids[guild_id]

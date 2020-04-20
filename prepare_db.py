@@ -21,18 +21,21 @@ def main():
 		verbose = False
 	conn = prepare_db(verbose)
 
+	# insert guilds
 	guild_names = {}
 	for guild_id, guild_name in iter_guilds():
 		guild_names[guild_id] = guild_name
 	with conn:
 		conn.executemany('INSERT INTO guilds (guild_id, name) VALUES(?, ?)', guild_names.items())
 
+	# insert channels
 	with conn:
 		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
 				iter_channels())
 		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
 				iter_programming_channels('raw/channels.csv'))
 
+	# insert users
 	with conn:
 		conn.executemany('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
 				iter_users())
@@ -44,6 +47,7 @@ def main():
 				if verbose:
 					print('duplicate user', *user_args)
 
+	# insert non-programming messages
 	channel_ids = defaultdict(dict)
 	for guild_id, channel_id, channel_name in iter_channels():
 		guild_name = guild_names[guild_id]
@@ -51,7 +55,7 @@ def main():
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
-	for row in iter_rows(channel_ids, 'raw/messages.csv.lzma', verbose):
+	for row in iter_rows(channel_ids, verbose):
 		channel_id, int_user_id, message_id, _content = row
 		dt = snowflake_dt(message_id)
 		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
@@ -64,9 +68,28 @@ def main():
 		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
 				iter_counts(counts))
 
-	month_rows = []
-	for month in sorted(months):
-		month_rows.append((month.strftime('%Y-%m'),))
+	# insert programming messages
+	prog_counts = []
+	with lzma.open('raw/messages.csv.lzma', 'rt', encoding='utf-8') as f:
+		reader = csv.DictReader(f)
+		for i, row in enumerate(reader):
+			channel_id = row['channel_id']
+			int_user_id = row['int_user_id']
+			hour = row['hour']
+			count = row['count']
+			dt = datetime.datetime.strptime(hour[:14], '%Y-%m-%d %H:').replace(tzinfo=datetime.timezone.utc)
+			prog_counts.append((int(channel_id), int(int_user_id), dt.timestamp(), int(count)))
+
+			month = dt.date().replace(day=1)
+			months.add(month)
+
+			if verbose and (i + 1) % 100000 == 0:
+				print('processed', i+1, 'programming hourly counts')
+	with conn:
+		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
+				prog_counts)
+
+	month_rows = ((month.strftime('%Y-%m'),) for month in sorted(months))
 	with conn:
 		conn.executemany('INSERT INTO months (month) VALUES(?)', month_rows)
 
@@ -153,7 +176,7 @@ def iter_programming_users(users_path):
 			real_user_id = int(row['real_user_id'])
 			yield (int_user_id, real_user_id, row['name'])
 
-def iter_rows(channel_ids, messages_xz_path, verbose):
+def iter_rows(channel_ids, verbose):
 	for guild in os.listdir(config.log_dir):
 		guild_path = path.join(config.log_dir, guild)
 		if not path.isdir(guild_path):
@@ -173,16 +196,6 @@ def iter_rows(channel_ids, messages_xz_path, verbose):
 						continue
 					message_id, _time, user_id, content = line.split(b'|', 3)
 					yield channel_id, int(user_id), int(message_id), content.decode('utf-8')
-
-	with lzma.open(messages_xz_path, 'rt', encoding='utf-8') as f:
-		reader = csv.DictReader(f)
-		for i, row in enumerate(reader):
-			channel_id = row['channel_id']
-			int_user_id = row['int_user_id']
-			message_id = row['message_id']
-			yield int(channel_id), int(int_user_id), int(message_id), row['content']
-			if verbose and (i + 1) % 100000 == 0:
-				print('processed', i+1, 'messages')
 
 def iter_counts(counts):
 	for channel_id, user_counts in counts.items():
