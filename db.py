@@ -25,7 +25,7 @@ class Users(Base):
 	__tablename__ = 'users'
 	int_user_id = Column(Integer, primary_key=True)
 	real_user_id = Column(Integer)
-	name = Column(Unicode)
+	name = Column(Unicode(collation='NOCASE'))
 
 class Months(Base):
 	__tablename__ = 'months'

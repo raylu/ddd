@@ -31,20 +31,31 @@ class MooDropdown {
 	}
 
 	render() {
-		const search = this.input.get('value').toLocaleLowerCase();
 		this.optionsDiv.getChildren('div').destroy();
-		let added = 0;
-		for (const option of this.options) {
-			if (!search || option['text'].toLocaleLowerCase().contains(search)) {
-				this.optionsDiv.grab(new Element('div', {
-					'class': 'moodropdown-option',
-					'data-value': option['value'],
-					'text': option['text'],
-				}));
-				added++;
-				if (added == 15)
-					break;
+
+		const search = this.input.get('value').toLocaleLowerCase();
+		let display;
+		if (!search) {
+			display = this.options.slice(0, 15);
+		} else {
+			const prefix = [];
+			const contains = [];
+			for (const option of this.options) {
+				const lower = option['text'].toLocaleLowerCase();
+				if (lower.startsWith(search))
+					prefix.push(option);
+				else if (contains.length < 15 && lower.contains(search))
+					contains.push(option);
 			}
+			display = prefix.slice(0, 15).append(contains.slice(0, 15 - prefix.length));
+		}
+
+		for (const option of display) {
+			this.optionsDiv.grab(new Element('div', {
+				'class': 'moodropdown-option',
+				'data-value': option['value'],
+				'text': option['text'],
+			}));
 		}
 	}
 

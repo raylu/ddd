@@ -117,7 +117,7 @@ def prepare_db(verbose):
 			CREATE TABLE users (
 				int_user_id INTEGER PRIMARY KEY,
 				real_user_id INTEGER,
-				name TEXT
+				name TEXT COLLATE NOCASE
 			)
 		''')
 		conn.execute('''
