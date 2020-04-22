@@ -35,18 +35,6 @@ def main():
 		conn.executemany('INSERT INTO channels (guild_id, channel_id, name) VALUES(?, ?, ?)',
 				iter_programming_channels('raw/channels.csv'))
 
-	# insert users
-	with conn:
-		conn.executemany('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
-				iter_users())
-		for user_args in iter_programming_users('raw/users.csv'):
-			try:
-				conn.execute('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
-						user_args)
-			except sqlite3.IntegrityError:
-				if verbose:
-					print('duplicate user', *user_args)
-
 	# insert non-programming messages
 	channel_ids = defaultdict(dict)
 	for guild_id, channel_id, channel_name in iter_channels():
@@ -55,6 +43,7 @@ def main():
 
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
+	int_user_ids = set()
 	for row in iter_rows(channel_ids, verbose):
 		channel_id, int_user_id, message_id, _content = row
 		dt = snowflake_dt(message_id)
@@ -63,6 +52,7 @@ def main():
 
 		month = dt.date().replace(day=1)
 		months.add(month)
+		int_user_ids.add(int_user_id)
 
 	with conn:
 		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
@@ -73,15 +63,16 @@ def main():
 	with lzma.open('raw/messages.csv.lzma', 'rt', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for i, row in enumerate(reader):
-			channel_id = row['channel_id']
-			int_user_id = row['int_user_id']
+			channel_id = int(row['channel_id'])
+			int_user_id = int(row['int_user_id'])
 			hour = row['hour']
-			count = row['count']
+			count = int(row['count'])
 			dt = datetime.datetime.strptime(hour[:14], '%Y-%m-%d %H:').replace(tzinfo=datetime.timezone.utc)
-			prog_counts.append((int(channel_id), int(int_user_id), dt.timestamp(), int(count)))
+			prog_counts.append((channel_id, int_user_id, dt.timestamp(), count))
 
 			month = dt.date().replace(day=1)
 			months.add(month)
+			int_user_ids.add(int_user_id)
 
 			if verbose and (i + 1) % 100000 == 0:
 				print('processed', i+1, 'programming hourly counts')
@@ -89,6 +80,19 @@ def main():
 		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
 				prog_counts)
 
+	# insert users
+	with conn:
+		conn.executemany('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
+				iter_users(int_user_ids))
+		for user_args in iter_programming_users('raw/users.csv', int_user_ids):
+			try:
+				conn.execute('INSERT INTO users (int_user_id, real_user_id, name) VALUES(?, ?, ?)',
+						user_args)
+			except sqlite3.IntegrityError:
+				if verbose:
+					print('duplicate user', *user_args)
+
+	# insert months
 	month_rows = ((month.strftime('%Y-%m'),) for month in sorted(months))
 	with conn:
 		conn.executemany('INSERT INTO months (month) VALUES(?)', month_rows)
@@ -161,18 +165,22 @@ def iter_programming_channels(channels_path):
 			channel_id = int(row['channel_id'])
 			yield (PROGRAMMING_GUILD_ID, channel_id, row['name'])
 
-def iter_users():
+def iter_users(int_user_ids):
 	with open(path.join(config.log_dir, 'users'), 'rb') as f:
 		for line in f:
 			user_id, username = line.rstrip(b'\n').split(b'|', 1)
 			user_id = int(user_id)
+			if user_id not in int_user_ids:
+				continue
 			yield (user_id, user_id, username.decode('utf-8'))
 
-def iter_programming_users(users_path):
+def iter_programming_users(users_path, int_user_ids):
 	with open(users_path, 'r') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
 			int_user_id = int(row['int_user_id'])
+			if int_user_id not in int_user_ids:
+				continue
 			real_user_id = int(row['real_user_id'])
 			yield (int_user_id, real_user_id, row['name'])
 
