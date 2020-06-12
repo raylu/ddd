@@ -4,3 +4,4 @@
 /config.py
 /ddd.db
 /markov/
+/static/emoji_user_stats_*.json

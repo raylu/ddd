@@ -1,0 +1,10 @@
+table#emoji th {
+	font-weight: normal;
+	writing-mode: vertical-rl;
+	text-orientation: mixed;
+	width: 32px;
+}
+
+table#emoji td {
+	text-align: right;
+}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}discord &ndash; {{ guild.name }} &ndash; emoji{% endblock title %}
+
+{% block head %}
+	<link rel="stylesheet" href="/static/emoji.css">
+{% endblock head %}
+
+{% block scripts %}
+	<script src="/static/emoji.js"></script>
+{% endblock scripts %}
+
+{% block content %}
+	<a href="/guild/{{ guild.guild_id }}/">chat stats</a>
+
+	<table id="emoji"></table>
+{% endblock content %}

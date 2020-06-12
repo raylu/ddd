@@ -11,6 +11,7 @@ import eventlet
 eventlet.monkey_patch()
 
 import datetime
+import mimetypes
 import os
 from os import path
 import random
@@ -129,6 +130,10 @@ def _filter(query, guild_id, qs):
 		query = query.filter(Messages.hour < end.timestamp())
 	return query
 
+def emoji_stats(request, guild_id):
+	guild = Session().query(Guilds).get(int(guild_id))
+	return Response.render(request, 'emoji.html', {'guild': guild})
+
 def markov_page(request, guild_id):
 	guild = Session().query(Guilds).get(int(guild_id))
 	return Response.render(request, 'markov.html', {'guild': guild})
@@ -147,6 +152,15 @@ def markov_line(request, guild_id):
 	username = random.choice(usernames[guild_id])
 	return Response.json({'username': username, 'line': line})
 
+def static(request, file_path):
+	try:
+		with open(path.join('static', file_path), 'rb') as f:
+			content = f.read()
+	except FileNotFoundError:
+		return Response('not found', 404)
+	content_type, _ = mimetypes.guess_type(file_path)
+	return Response(body=content, content_type=content_type)
+
 routes = [
 	('GET', '/', root),
 	('GET', '/guild/<guild_id>/', guild_page),
@@ -155,9 +169,12 @@ routes = [
 	('GET', '/guild/<guild_id>/by_hour.json', by_hour),
 	('GET', '/guild/<guild_id>/by_user.json', by_user),
 	('GET', '/guild/<guild_id>/by_channel.json', by_channel),
+	('GET', '/guild/<guild_id>/emoji', emoji_stats),
 
 	('GET', '/guild/<guild_id>/markov', markov_page),
 	('GET', '/guild/<guild_id>/markov.json', markov_line),
+
+	('GET', '/static/<path:file_path>', static),
 ]
 
 def response_done(request, response):
