@@ -143,8 +143,8 @@ for model_file in os.listdir('markov'):
 	if not model_file.endswith('.json'):
 		continue
 	_guild_id = int(model_file[:-5])
-	with open(path.join('markov', model_file), 'r') as f:
-		markov_models[_guild_id] = markovify.Text.from_json(f.read())
+	with open(path.join('markov', model_file), 'r') as markov_file:
+		markov_models[_guild_id] = markovify.Text.from_json(markov_file.read())
 usernames = top_usernames()
 def markov_line(request, guild_id):
 	guild_id = int(guild_id)
