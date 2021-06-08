@@ -97,12 +97,14 @@ def main():
 	with conn:
 		conn.executemany('INSERT INTO months (month) VALUES(?)', month_rows)
 
+	os.rename('ddd_update.db', 'ddd.db')
+
 def prepare_db(verbose):
-	if path.exists('ddd.db'):
+	if path.exists('ddd_update.db'):
 		if verbose:
-			print('deleting ddd.db')
-		os.unlink('ddd.db')
-	conn = sqlite3.connect('ddd.db')
+			print('deleting ddd_update.db')
+		os.unlink('ddd_update.db')
+	conn = sqlite3.connect('ddd_update.db')
 	with conn:
 		conn.execute('''
 			CREATE TABLE guilds (
