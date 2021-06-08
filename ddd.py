@@ -104,7 +104,7 @@ def by_channel(request, guild_id):
 			.with_entities(Messages.channel_id, Channels.name, func.sum(Messages.count).label('count')) \
 			.outerjoin(Channels, Messages.channel_id == Channels.channel_id) \
 			.group_by(Channels.channel_id).order_by(func.sum(Messages.count).desc())
-	query = _filter(query, int(guild_id), request.query)
+	query = _filter(query, int(guild_id), request.query, join_channel=False)
 
 	data = []
 	for row in query:
@@ -115,8 +115,8 @@ def by_channel(request, guild_id):
 		})
 	return Response.json(data)
 
-def _filter(query, guild_id, qs):
-	if Channels not in (mapper.class_ for mapper in query._join_entities):
+def _filter(query, guild_id, qs, join_channel=True):
+	if join_channel:
 		query = query.join(Channels, Messages.channel_id == Channels.channel_id)
 	query = query.filter(Channels.guild_id == guild_id)
 	if 'channel_id' in qs:
