@@ -1,0 +1,37 @@
+# https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: CI
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: install python deps
+      run: pip3 install --quiet --requirement requirements.txt pylint
+
+    - name: unittest
+      run: python3 -m unittest --verbose
+
+    - name: pylint
+      run: pylint *.py
+
+    - uses: actions/setup-node@v2
+
+    - name: install eslint
+      run: npm install -g eslint
+
+    - name: eslint
+      run: eslint static
