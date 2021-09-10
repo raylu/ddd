@@ -16,7 +16,7 @@ def main(argv):
 	if argv[1] == 'gen':
 		prepare_model()
 	else:
-		with open(path.join('markov', argv[1] + '.json'), 'r') as f:
+		with open(path.join('markov', argv[1] + '.json'), 'r', encoding='utf-8') as f:
 			model = markovify.Text.from_json(f.read())
 		for _ in range(5):
 			print(model.make_short_sentence(150))
@@ -48,7 +48,7 @@ def prepare_model():
 		pass
 	for guild_id, stringio in guild_content.items():
 		text_model = markovify.Text(stringio.getvalue(), state_size=3)
-		with open(path.join('markov', '%d.json' % guild_id), 'w') as f:
+		with open(path.join('markov', '%d.json' % guild_id), 'w', encoding='utf-8') as f:
 			f.write(text_model.to_json())
 
 

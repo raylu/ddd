@@ -161,7 +161,7 @@ def iter_channels():
 			yield (int(guild_id), int(channel_id), name.decode('utf-8'))
 
 def iter_programming_channels(channels_path):
-	with open(channels_path, 'r') as f:
+	with open(channels_path, 'r', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
 			channel_id = int(row['channel_id'])
@@ -177,7 +177,7 @@ def iter_users(int_user_ids):
 			yield (user_id, user_id, username.decode('utf-8'))
 
 def iter_programming_users(users_path, int_user_ids):
-	with open(users_path, 'r') as f:
+	with open(users_path, 'r', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
 			int_user_id = int(row['int_user_id'])
