@@ -140,7 +140,7 @@ def markov_page(request, guild_id):
 
 markov_models = {}
 for model_file in os.listdir('markov'):
-	if not model_file.endswith('.json'):
+	if not model_file.endswith('.json') or model_file == '181866934353133570.json':
 		continue
 	_guild_id = int(model_file[:-5])
 	with open(path.join('markov', model_file), 'r', encoding='utf-8') as markov_file:

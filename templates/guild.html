@@ -14,7 +14,9 @@
 {% block content %}
 	<h1><a href="/">discord</a> &ndash; {{ guild.name }}</h1>
 
-	<a href="markov">markov simulation</a>
+	{% if guild.guild_id != 181866934353133570 %}
+		<a href="markov">markov simulation</a>
+	{% endif %}
 
 	<p>
 	<form>
