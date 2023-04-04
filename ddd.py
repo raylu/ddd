@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-# pylint: disable=wrong-import-order,wrong-import-position,ungrouped-imports
+# ruff: noqa: E402
 
 import sys
-if len(sys.argv) == 1: # dev
+if len(sys.argv) == 1 and sys.platform == 'linux': # dev
 	import pigwig.reloader_linux
 	pigwig.reloader_linux.init()
 
