@@ -1,8 +1,7 @@
+'use strict';
 /* global $ */
 
 window.addEvent('domready', function() {
-	'use strict';
-
 	const interval = setInterval(getNewLine, 3000);
 	getNewLine();
 

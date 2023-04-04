@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"outDir": "./static",
+		"target": "esnext",
+		"incremental": true,
+		"tsBuildInfoFile": "ts/.tsbuildinfo"
+	},
+	"include": ["./ts/**/*"]
+}

@@ -5,4 +5,7 @@
 /ddd.db
 /ddd_update.db
 /markov/
+/ts/.tsbuildinfo
+/static/*.js
+/static/*.mjs
 /static/emoji_user_stats_*.json

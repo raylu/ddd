@@ -1,5 +1,3 @@
-/* exported MooDropdown */
-
 class MooDropdown {
 	static setupClose(...dropdowns) {
 		// we called stopPropagation on click events inside any MooDropdown.element,
@@ -135,3 +133,5 @@ function debounce(ms, func) {
 		}, ms);
 	};
 }
+
+export {MooDropdown};

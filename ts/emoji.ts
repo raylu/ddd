@@ -1,8 +1,7 @@
+'use strict';
 /* global $ */
 
 window.addEvent('domready', function() {
-	'use strict';
-
 	const guildID = window.location.pathname.split('/', 3)[2];
 	new Request.JSON({
 		'url': `/static/emoji_user_stats_${guildID}.json`,

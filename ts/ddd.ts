@@ -1,8 +1,9 @@
-/* global $ MooDropdown */
+'use strict';
+/* global $ */
+
+import {MooDropdown} from './dropdown.mjs';
 
 window.addEvent('domready', function() {
-	'use strict';
-
 	new Request.JSON({
 		'url': 'channel_user_month_list.json',
 		'onSuccess': channelUserMonthList,
