@@ -63,6 +63,8 @@ def main():
 	with lzma.open('raw/messages.csv.lzma', 'rt', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for i, row in enumerate(reader):
+			if len(row['channel_id']) == 0:
+				continue
 			channel_id = int(row['channel_id'])
 			int_user_id = int(row['int_user_id'])
 			hour = row['hour']
