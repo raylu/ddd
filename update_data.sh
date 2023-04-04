@@ -7,7 +7,7 @@ scp -qr lilim.programming.im:raw .
 rm -f raw/messages.csv.lzma
 lzma raw/messages.csv
 
-../discord_log/discord_log -q
+~/venv/bin/python3 ../discord_log/discord_log -q
 
-./prepare_db.py -q
-./markov.py gen
+~/venv/bin/python3 ./prepare_db.py -q
+#./markov.py gen
