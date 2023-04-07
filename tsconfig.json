@@ -2,7 +2,16 @@
 	"compilerOptions": {
 		"outDir": "./static",
 		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"module": "nodenext",
+		"experimentalDecorators": true,
+		"moduleResolution": "node",
+		"declaration": true,
+		"declarationMap": true,
+		"useDefineForClassFields": false,
 		"incremental": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
 		"tsBuildInfoFile": "ts/.tsbuildinfo"
 	},
 	"include": ["./ts/**/*"]

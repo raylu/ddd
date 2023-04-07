@@ -7,5 +7,5 @@
 /markov/
 /ts/.tsbuildinfo
 /static/*.js
-/static/*.mjs
+/static/*.js.map
 /static/emoji_user_stats_*.json

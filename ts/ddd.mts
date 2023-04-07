@@ -2,6 +2,9 @@
 /* global $ */
 
 import {MooDropdown} from './dropdown.mjs';
+import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+import 'lit-flatpickr';
 
 window.addEvent('domready', function() {
 	new Request.JSON({
@@ -12,11 +15,10 @@ window.addEvent('domready', function() {
 
 	const channelSelect = new MooDropdown($('channel'));
 	const userSelect = new MooDropdown($('user'));
-	const monthSelect = new MooDropdown($('month'));
-	MooDropdown.setupClose(channelSelect, userSelect, monthSelect);
+	const dateSelect: DatePicker = document.querySelector('date-picker#dates');
+	MooDropdown.setupClose(channelSelect, userSelect);
 	channelSelect.addOption(null, '(all)');
 	userSelect.addOption(null, '(all)');
-	monthSelect.addOption(null, '(all)');
 
 	function query(initial) {
 		const qs = {};
@@ -24,8 +26,14 @@ window.addEvent('domready', function() {
 			qs['channel_id'] = channelSelect.value;
 		if (userSelect.value)
 			qs['int_user_id'] = userSelect.value;
-		if (monthSelect.value)
-			qs['month'] = monthSelect.value;
+		const dateStr = dateSelect.getValue();
+		if (dateStr.length > 0) {
+			const dates = dateSelect.getValue().split(' to ');
+			if (dates.length == 1)
+				qs['from'] = qs['to'] = dates[0];
+			else if (dates.length == 2)
+				[qs['from'], qs['to']] = dates;
+		}
 		if (!initial)
 			history.pushState(qs, '', '?' + Object.toQueryString(qs));
 
@@ -61,12 +69,8 @@ window.addEvent('domready', function() {
 		data['users'].each((user) => {
 			userSelect.addOption(user['id'], user['name']);
 		});
-		data['months'].each((month) => {
-			monthSelect.addOption(month, month);
-		});
 		channelSelect.render();
 		userSelect.render();
-		monthSelect.render();
 
 		const qs = window.location.search.substr(1);
 		const params = {};
@@ -77,11 +81,12 @@ window.addEvent('domready', function() {
 		});
 		channelSelect.select(params['channel_id'] || null);
 		userSelect.select(params['int_user_id'] || null);
-		monthSelect.select(params['month'] || null);
+		if (params['from'] && params['to'])
+			dateSelect.setDates(params['from'], params['to']);
 
 		channelSelect.addEvent('moodropdown-select', () => {query(false);});
 		userSelect.addEvent('moodropdown-select', () => {query(false);});
-		monthSelect.addEvent('moodropdown-select', () => {query(false);});
+		dateSelect.addEventListener('date-changed', (event: CustomEvent) => {query(false);});
 
 		query(true);
 	}
@@ -173,3 +178,41 @@ window.addEvent('domready', function() {
 		});
 	}
 });
+
+@customElement('date-picker')
+class DatePicker extends LitElement {
+	render() {
+		return html`<lit-flatpickr
+			mode="range"
+			allowInput
+			dateFormat="Y-m-d"
+			theme="dark"
+			showMonths="2"
+			minDate="2015-12-01"
+			.maxDate=${new Date()}
+			nextArrow="&rarr;"
+			prevArrow="&larr;"
+			.onChange="${(dates, str) => this.handleChange(dates, str)}"
+		></lit-flatpickr>`;
+	}
+
+	getValue(): string {
+		return (this.shadowRoot.querySelector('lit-flatpickr') as any).getValue();
+	}
+
+	setDates(from: string, to: string): void {
+		(this.shadowRoot.querySelector('lit-flatpickr') as any).setDate([from, to]);
+	}
+
+	private handleChange(dates: Array<Date>, str: string) {
+		this.dispatchEvent(new CustomEvent('date-changed', {bubbles: true, composed: true}));
+	}
+
+	static styles = css`
+		lit-flatpickr {
+			background-color: #222;
+			border: 1px solid #333;
+			color: #ccc;
+		}
+	`;
+}

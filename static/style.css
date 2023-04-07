@@ -35,6 +35,14 @@ div#content {
 	padding: 50px;
 }
 
+form {
+	margin-top: 2em;
+	display: grid;
+	grid-template-columns: 75px auto;
+	row-gap: 0.5em;
+	align-items: center;
+}
+
 table tr:nth-child(even) {
 	background-color: #222;
 }

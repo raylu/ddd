@@ -2,6 +2,8 @@
 
 # ruff: noqa: E402
 
+from __future__ import annotations
+
 import sys
 if len(sys.argv) == 1 and sys.platform == 'linux': # dev
 	import pigwig.reloader_linux
@@ -15,11 +17,14 @@ import mimetypes
 import os
 from os import path
 import random
+import typing
 
 import eventlet.wsgi
 import markovify
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
+if typing.TYPE_CHECKING:
+	from sqlalchemy.orm.query import Query
 
 from db import Session, Guilds, Channels, Users, Months, Messages, top_usernames
 
@@ -115,7 +120,7 @@ def by_channel(request, guild_id):
 		})
 	return Response.json(data)
 
-def _filter(query, guild_id, qs, join_channel=True):
+def _filter(query: Query, guild_id: int, qs: dict[str, str], join_channel=True):
 	if join_channel:
 		query = query.join(Channels, Messages.channel_id == Channels.channel_id)
 	query = query.filter(Channels.guild_id == guild_id)
@@ -123,10 +128,12 @@ def _filter(query, guild_id, qs, join_channel=True):
 		query = query.filter(Messages.channel_id == int(qs['channel_id']))
 	if 'int_user_id' in qs:
 		query = query.filter(Messages.int_user_id == int(qs['int_user_id']))
-	if 'month' in qs:
-		start = datetime.datetime.strptime(qs['month'], '%Y-%m').replace(tzinfo=datetime.timezone.utc)
-		end = (start + datetime.timedelta(days=31)).replace(day=1)
+	if 'from' in qs:
+		start = datetime.datetime.strptime(qs['from'], '%Y-%m-%d').replace(tzinfo=datetime.timezone.utc)
 		query = query.filter(start.timestamp() <= Messages.hour)
+	if 'to' in qs:
+		end = datetime.datetime.strptime(qs['to'], '%Y-%m-%d').replace(tzinfo=datetime.timezone.utc)
+		end += datetime.timedelta(days=1)
 		query = query.filter(Messages.hour < end.timestamp())
 	return query
 
