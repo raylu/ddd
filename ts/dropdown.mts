@@ -126,10 +126,9 @@ function debounce(ms, func) {
 	let timeout;
 	return function() {
 		clearTimeout(timeout);
-		const context = this;
 		timeout = setTimeout(() => {
 			timeout = null;
-			func.apply(context);
+			func.apply(this);
 		}, ms);
 	};
 }

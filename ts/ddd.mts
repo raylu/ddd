@@ -3,7 +3,7 @@
 
 import {MooDropdown} from './dropdown.mjs';
 import {LitElement, css, html} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement} from 'lit/decorators.js';
 import 'lit-flatpickr';
 
 window.addEvent('domready', function() {
@@ -75,8 +75,7 @@ window.addEvent('domready', function() {
 		const qs = window.location.search.substr(1);
 		const params = {};
 		qs.split('&').each((fragment) => {
-			let key, val;
-			[key, val] = fragment.split('=');
+			const [key, val] = fragment.split('=');
 			params[key] = decodeURIComponent(val);
 		});
 		channelSelect.select(params['channel_id'] || null);

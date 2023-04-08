@@ -6,6 +6,12 @@
 		"typescript": "^5.0.3"
 	},
 	"devDependencies": {
-		"@types/node": "^18.15.11"
+		"@types/node": "^18.15.11",
+		"@typescript-eslint/eslint-plugin": "^5.57.1",
+		"@typescript-eslint/parser": "^5.57.1",
+		"eslint": "^8.38.0"
+	},
+	"scripts": {
+		"esbuild": "esbuild ts/* --bundle --format=esm --outdir=static --sourcemap --watch"
 	}
 }

@@ -34,7 +34,9 @@ jobs:
         node-version: 16
 
     - name: install eslint
-      run: npm install -g eslint
+      run: |
+        npm install -g pnpm
+        pnpm install
 
     - name: eslint
-      run: eslint static
+      run: pnpm exec eslint .

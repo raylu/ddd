@@ -1,7 +1,16 @@
 env:
   browser: true
-  es6: true
-extends: 'eslint:recommended'
+  es2022: true
+ignorePatterns:
+  - static/
+overrides:
+  - files: ["*.mts"]
+    parserOptions:
+      sourceType: module
+plugins: ['@typescript-eslint']
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
 rules:
   indent:
     - error
@@ -9,9 +18,17 @@ rules:
   linebreak-style:
     - error
     - unix
+  prefer-const:
+    - error
+    - destructuring: all
   quotes:
     - error
     - single
   semi:
     - error
     - always
+  '@typescript-eslint/no-unused-vars':
+    - error
+    - args: none
+  '@typescript-eslint/no-explicit-any':
+    - off
