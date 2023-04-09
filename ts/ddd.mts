@@ -2,10 +2,10 @@
 /* global $ */
 
 import {MooDropdown} from './dropdown.mjs';
+import {MessageCount, MessageGraph} from './message_graph.mjs';
 import {LitElement, css, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import 'lit-flatpickr';
-
 
 async function fetchJSON(path: string, qs?: Record<string, string>) {
 	if (qs)
@@ -21,10 +21,13 @@ window.addEventListener('DOMContentLoaded', () => {
 	MooDropdown.setupClose(channelSelect, userSelect);
 	channelSelect.addOption(null, '(all)');
 	userSelect.addOption(null, '(all)');
+	const monthGraph = document.querySelector('#month_graph') as MessageGraph;
+	const hourGraph = document.querySelector('#hour_graph') as MessageGraph;
+	const graphs = [monthGraph, hourGraph];
 
 	fetchJSON('channel_user_month_list.json').then(channelUserMonthList);
 
-	function query(initial) {
+	function query(initial: boolean) {
 		const qs = {};
 		if (channelSelect.value)
 			qs['channel_id'] = channelSelect.value;
@@ -41,6 +44,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		if (!initial)
 			history.pushState(qs, '', '?' + Object.toQueryString(qs));
 
+		graphs.forEach((graph) => graph.loading = true);
 		fetchJSON('by_month.json', qs).then(byMonth);
 		fetchJSON('by_hour.json', qs).then(byHour);
 		fetchJSON('by_user.json', qs).then(byUser);
@@ -75,7 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		query(true);
 	}
 
-	function byMonth(data: Array<object>) {
+	function byMonth(data: MessageCount[]) {
 		const max = Math.max.apply(null, data.map((month) => month['count']));
 
 		const table = $('by_month').getElement('tbody');
@@ -93,9 +97,12 @@ window.addEventListener('DOMContentLoaded', () => {
 			);
 			table.grab(row);
 		});
+
+		monthGraph.data = data;
+		monthGraph.loading = false;
 	}
 
-	function byHour(data: Array<object>) {
+	function byHour(data: MessageCount[]) {
 		const max = Math.max.apply(null, data.map((hour) => hour['count']));
 
 		const table = $('by_hour').getElement('tbody');
@@ -113,9 +120,12 @@ window.addEventListener('DOMContentLoaded', () => {
 			);
 			table.grab(row);
 		});
+
+		hourGraph.data = data;
+		hourGraph.loading = false;
 	}
 
-	function byUser(data: Array<object>) {
+	function byUser(data: MessageCount[]) {
 		const table = $('by_user').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		let cumulative = 0;
@@ -142,7 +152,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	function byChannel(data: Array<object>) {
+	function byChannel(data: MessageCount[]) {
 		const table = $('by_channel').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		data.each((channel, i) => {

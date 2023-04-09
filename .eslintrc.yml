@@ -15,6 +15,7 @@ rules:
   indent:
     - error
     - tab
+    - ignoredNodes: [PropertyDefinition]
   linebreak-style:
     - error
     - unix

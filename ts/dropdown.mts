@@ -1,3 +1,5 @@
+'use strict';
+
 class MooDropdown {
 	static setupClose(...dropdowns) {
 		// we called stopPropagation on click events inside any MooDropdown.element,
