@@ -6,19 +6,23 @@ import {LitElement, css, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import 'lit-flatpickr';
 
-window.addEvent('domready', function() {
-	new Request.JSON({
-		'url': 'channel_user_month_list.json',
-		'onSuccess': channelUserMonthList,
-		'onError': (text, err) => { console.error(err); }, // eslint-disable-line no-console
-	}).get();
 
+async function fetchJSON(path: string, qs?: Record<string, string>) {
+	if (qs)
+		path += '?' + new URLSearchParams(qs);
+	const res = await fetch(path);
+	return await res.json();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
 	const channelSelect = new MooDropdown($('channel'));
 	const userSelect = new MooDropdown($('user'));
 	const dateSelect: DatePicker = document.querySelector('date-picker#dates');
 	MooDropdown.setupClose(channelSelect, userSelect);
 	channelSelect.addOption(null, '(all)');
 	userSelect.addOption(null, '(all)');
+
+	fetchJSON('channel_user_month_list.json').then(channelUserMonthList);
 
 	function query(initial) {
 		const qs = {};
@@ -37,32 +41,13 @@ window.addEvent('domready', function() {
 		if (!initial)
 			history.pushState(qs, '', '?' + Object.toQueryString(qs));
 
-		new Request.JSON({
-			'url': 'by_month.json',
-			'data': qs,
-			'onSuccess': byMonth,
-		}).get();
-
-		new Request.JSON({
-			'url': 'by_hour.json',
-			'data': qs,
-			'onSuccess': byHour,
-		}).get();
-
-		new Request.JSON({
-			'url': 'by_user.json',
-			'data': qs,
-			'onSuccess': byUser,
-		}).get();
-
-		new Request.JSON({
-			'url': 'by_channel.json',
-			'data': qs,
-			'onSuccess': byChannel,
-		}).get();
+		fetchJSON('by_month.json', qs).then(byMonth);
+		fetchJSON('by_hour.json', qs).then(byHour);
+		fetchJSON('by_user.json', qs).then(byUser);
+		fetchJSON('by_channel.json', qs).then(byChannel);
 	}
 
-	function channelUserMonthList(data) {
+	function channelUserMonthList(data: object) {
 		data['channels'].each((channel) => {
 			channelSelect.addOption(channel['id'], channel['name']);
 		});
@@ -74,7 +59,7 @@ window.addEvent('domready', function() {
 
 		const qs = window.location.search.substr(1);
 		const params = {};
-		qs.split('&').each((fragment) => {
+		qs.split('&').forEach((fragment) => {
 			const [key, val] = fragment.split('=');
 			params[key] = decodeURIComponent(val);
 		});
@@ -90,7 +75,7 @@ window.addEvent('domready', function() {
 		query(true);
 	}
 
-	function byMonth(data) {
+	function byMonth(data: Array<object>) {
 		const max = Math.max.apply(null, data.map((month) => month['count']));
 
 		const table = $('by_month').getElement('tbody');
@@ -110,7 +95,7 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function byHour(data) {
+	function byHour(data: Array<object>) {
 		const max = Math.max.apply(null, data.map((hour) => hour['count']));
 
 		const table = $('by_hour').getElement('tbody');
@@ -130,7 +115,7 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function byUser(data) {
+	function byUser(data: Array<object>) {
 		const table = $('by_user').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		let cumulative = 0;
@@ -157,7 +142,7 @@ window.addEvent('domready', function() {
 		});
 	}
 
-	function byChannel(data) {
+	function byChannel(data: Array<object>) {
 		const table = $('by_channel').getElement('tbody');
 		table.getElement('tr').getAllNext().destroy();
 		data.each((channel, i) => {
