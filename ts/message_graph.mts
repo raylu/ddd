@@ -15,6 +15,8 @@ export class MessageGraph extends LitElement {
 	@property({type: Boolean})
 	percentageColumn = false;
 	@property({type: Boolean})
+	cumulative = false;
+	@property({type: Boolean})
 	loading = true;
 
 	render() {
@@ -22,12 +24,16 @@ export class MessageGraph extends LitElement {
 			return html`<span class="loader"></span>`;
 
 		const max: number = Math.max.apply(null, this.data.map((row) => row['count']));
+		let barPx = 500;
 		let rankHeader: TemplateResult | symbol = nothing;
 		let percentageHeader: TemplateResult | symbol = nothing;
 		if (this.percentageColumn) {
 			rankHeader = html`<th>rank</th>`;
 			percentageHeader = html`<th>percentage</th>`;
+			if (this.cumulative)
+				barPx -= 100;
 		}
+		let total = 0;
 		return html`<table>
 				<tr>
 					${rankHeader}
@@ -39,9 +45,19 @@ export class MessageGraph extends LitElement {
 				${this.data.map((row, i) => { 
 					let rank: TemplateResult | symbol = nothing;
 					let percentage: TemplateResult | symbol = nothing;
+					let filler: TemplateResult | symbol = nothing;
+					let bar = html`
+						<div class="bar" style="width: ${row['count'] / max * barPx}px"></div>`;
+					let cumulative: TemplateResult | symbol = nothing;
 					if (this.percentageColumn) {
 						rank = html`<td class="right">${i}</td>`;
 						percentage = html`<td class="right">${row['percentage'].toFixed(2)}</td>`;
+						bar = html`<div class="bar" style="width: ${row['percentage'] / 100 * barPx}px">`;
+						if (this.cumulative) {
+							filler = html`<div class="bar filler" style="width: ${total / 100 * barPx}px">`;
+							total += row['percentage'];
+							cumulative = html`<td class="right">${total.toFixed(2)}</td>`;
+						}
 					}
 					return html`
 						<tr>
@@ -49,7 +65,8 @@ export class MessageGraph extends LitElement {
 							<td>${row[this.name]}</td>
 							<td class="right">${row['count'].toLocaleString()}</td>
 							${percentage}
-							<td><div class="bar" style="width: ${row['count'] / max * 500}px"></div></td>
+							<td>${filler}${bar}</td>
+							${cumulative}
 						</tr>
 					`;
 				})}

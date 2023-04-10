@@ -94,7 +94,7 @@ def by_user(request, guild_id):
 	data = []
 	for row in query:
 		data.append({
-			'name': row.name or str(row.real_user_id),
+			'user': row.name or str(row.real_user_id),
 			'count': row.count,
 			'percentage': float('%.2f' % (row.count / total * 100)),
 		})
