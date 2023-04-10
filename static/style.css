@@ -43,34 +43,6 @@ form {
 	align-items: center;
 }
 
-table tr:nth-child(even) {
-	background-color: #222;
-}
-table td {
-	padding: 2px;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-}
-table td.right {
-	text-align: right;
-}
-table th.graph {
-	width: 500px;
-}
-
-div.bar {
-	display: inline-block;
-	height: 1em;
-	background-color: #888;
-}
-div.bar.filler {
-	background-color: #333;
-}
-div.bar.filler.header {
-	width: 400px;
-}
-
 a.github {
 	font-family: monospace;
 }

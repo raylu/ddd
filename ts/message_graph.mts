@@ -98,9 +98,6 @@ export class MessageGraph extends LitElement {
 		div.bar.filler {
 			background-color: #333;
 		}
-		div.bar.filler.header {
-			width: 400px;
-		}
 
 		.loader {
 			width: 48px;
