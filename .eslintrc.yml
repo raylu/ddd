@@ -12,10 +12,6 @@ extends:
   - eslint:recommended
   - plugin:@typescript-eslint/recommended
 rules:
-  indent:
-    - error
-    - tab
-    - ignoredNodes: [PropertyDefinition]
   linebreak-style:
     - error
     - unix

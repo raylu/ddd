@@ -1,12 +1,10 @@
 'use strict';
 
-import {LitElement, css, html} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 type Name = 'month' | 'hour' | 'user' | 'channel';
-export interface MessageCount {
-	count: number;
-}
+export type MessageCount = {count: number} & {[name in Name]?: string};
 
 @customElement('message-graph')
 export class MessageGraph extends LitElement {
@@ -15,6 +13,8 @@ export class MessageGraph extends LitElement {
 	@property({type: Array})
 	data: MessageCount[];
 	@property({type: Boolean})
+	percentageColumn = false;
+	@property({type: Boolean})
 	loading = true;
 
 	render() {
@@ -22,19 +22,37 @@ export class MessageGraph extends LitElement {
 			return html`<span class="loader"></span>`;
 
 		const max: number = Math.max.apply(null, this.data.map((row) => row['count']));
+		let rankHeader: TemplateResult | symbol = nothing;
+		let percentageHeader: TemplateResult | symbol = nothing;
+		if (this.percentageColumn) {
+			rankHeader = html`<th>rank</th>`;
+			percentageHeader = html`<th>percentage</th>`;
+		}
 		return html`<table>
 				<tr>
+					${rankHeader}
 					<th>${this.name}</th>
 					<th>messages</th>
+					${percentageHeader}
 					<th></th>
 				</tr>
-				${this.data.map((row) => html`
-					<tr>
-						<td>${row[this.name]}</td>
-						<td class="right">${row['count'].toLocaleString()}</td>
-						<td><div class="bar" style="width: ${row['count'] / max * 500}px"></div></td>
-					</tr>
-				`)}
+				${this.data.map((row, i) => { 
+					let rank: TemplateResult | symbol = nothing;
+					let percentage: TemplateResult | symbol = nothing;
+					if (this.percentageColumn) {
+						rank = html`<td class="right">${i}</td>`;
+						percentage = html`<td class="right">${row['percentage'].toFixed(2)}</td>`;
+					}
+					return html`
+						<tr>
+							${rank}
+							<td>${row[this.name]}</td>
+							<td class="right">${row['count'].toLocaleString()}</td>
+							${percentage}
+							<td><div class="bar" style="width: ${row['count'] / max * 500}px"></div></td>
+						</tr>
+					`;
+				})}
 			</table>`;
 	}
 

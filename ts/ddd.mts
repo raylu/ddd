@@ -23,7 +23,8 @@ window.addEventListener('DOMContentLoaded', () => {
 	userSelect.addOption(null, '(all)');
 	const monthGraph = document.querySelector('#month_graph') as MessageGraph;
 	const hourGraph = document.querySelector('#hour_graph') as MessageGraph;
-	const graphs = [monthGraph, hourGraph];
+	const channelGraph = document.querySelector('#channel_graph') as MessageGraph;
+	const graphs = [monthGraph, hourGraph, channelGraph];
 
 	fetchJSON('channel_user_month_list.json').then(channelUserMonthList);
 
@@ -163,13 +164,16 @@ window.addEventListener('DOMContentLoaded', () => {
 			});
 			row.adopt(
 				new Element('td', {'text': i + 1}),
-				new Element('td', {'text': channel['name']}),
+				new Element('td', {'text': channel['channel']}),
 				new Element('td', {'text': channel['count'].toLocaleString(), 'class': 'right'}),
 				new Element('td', {'text': channel['percentage'].toFixed(2), 'class': 'right'}),
 				new Element('td').adopt(bar)
 			);
 			table.grab(row);
 		});
+
+		channelGraph.data = data;
+		channelGraph.loading = false;
 	}
 });
 

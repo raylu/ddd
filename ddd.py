@@ -114,7 +114,7 @@ def by_channel(request, guild_id):
 	data = []
 	for row in query:
 		data.append({
-			'name': row.name or str(row.channel_id),
+			'channel': row.name or str(row.channel_id),
 			'count': row.count,
 			'percentage': float('%.2f' % (row.count / total * 100)),
 		})
