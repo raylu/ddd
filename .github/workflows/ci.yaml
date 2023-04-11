@@ -29,14 +29,16 @@ jobs:
     - name: ruff
       run: ruff check --format=github .
 
+    - uses: pnpm/action-setup@v2
+      with:
+        version: '*'
+
     - uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
+        cache: pnpm
 
-    - name: install eslint
-      run: |
-        npm install -g pnpm
-        pnpm install
+    - run: pnpm install --frozen-lockfile
 
     - name: eslint
       run: pnpm exec eslint .
