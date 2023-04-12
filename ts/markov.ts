@@ -1,26 +1,27 @@
 'use strict';
-/* global $ */
 
-window.addEvent('domready', function() {
+window.addEventListener('DOMContentLoaded', () => {
 	const interval = setInterval(getNewLine, 3000);
 	getNewLine();
 
-	function getNewLine() {
-		new Request.JSON({
-			'url': 'markov.json',
-			'onSuccess': newLine,
-		}).get();
+	async function getNewLine() {
+		const res = await fetch('markov.json');
+		newLine(await res.json());
 	}
 
-	const simulation = $('simulation');
+	const simulation = document.querySelector('#simulation');
 	let count = 0;
-	function newLine(data) {
+	function newLine(data: {username: string, line: string}) {
 		const line = data['line'];
 		if (line != null) {
-			const userDiv = new Element('div', {'text': data['username'], 'class': 'username'});
-			const div = new Element('div', {'class': 'line'}).grab(userDiv);
-			div.appendText(line);
-			simulation.grab(div);
+			// const userDiv = new Element('div', {'text': data['username'], 'class': 'username'});
+			// const div = new Element('div', {'class': 'line'}).grab(userDiv);
+			// div.appendText(line);
+			const div = document.createElement('div');
+			div.classList.add('line');
+			div.innerHTML = `<div class="username">${data['username']}</div>`;
+			div.append(line);
+			simulation.append(div);
 		}
 
 		count++;
