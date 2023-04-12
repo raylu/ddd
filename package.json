@@ -12,6 +12,7 @@
 		"eslint": "^8.38.0"
 	},
 	"scripts": {
-		"esbuild": "esbuild ts/* --bundle --format=esm --outdir=static --sourcemap --watch"
+		"esbuild": "esbuild ts/* --bundle --format=esm --outdir=static --sourcemap --watch",
+		"tsc": "tsc --noEmit"
 	}
 }

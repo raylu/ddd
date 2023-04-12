@@ -1,46 +1,57 @@
 'use strict';
-/* global $ */
 
-window.addEvent('domready', function() {
-	const guildID = window.location.pathname.split('/', 3)[2];
-	new Request.JSON({
-		'url': `/static/emoji_user_stats_${guildID}.json`,
-		'onSuccess': render,
-	}).get();
+interface EmojiResponse {
+	users: {[userID: string]: string}
+	emojis: UserCounts
+}
+interface UserCounts {
+	[emoji: string]: {[userID: string]: number}
+}
 
-	function render(data) {
+window.addEventListener('DOMContentLoaded', () => {
+	(async () => {
+		const guildID = window.location.pathname.split('/', 3)[2];
+		const res = await fetch(`/static/emoji_user_stats_${guildID}.json`);
+		render(await res.json());
+	})();
+
+	function render(data: EmojiResponse) {
 		const {users, emojis} = data;
 
-		const header = new Element('tr');
-		header.grab(new Element('td')); // blank top-left cell;
+		const header = document.createElement('tr');
+		header.append(document.createElement('td')); // blank top-left cell;
 		for (const userID in users) {
-			header.grab(new Element('th', {'text': users[userID]}));
+			const th = document.createElement('th');
+			th.innerText = users[userID];
+			header.append(th);
 		}
 
-		const table = $('emoji');
-		table.grab(header);
+		const table = document.querySelector('#emoji');
+		table.append(header);
 		const max = Math.log(findMax(emojis));
 		for (const emoji in emojis) {
-			const row = new Element('tr');
-			row.grab(new Element('td', {'text': emoji}));
+			const row = document.createElement('tr');
+			let td = document.createElement('td');
+			td.innerText = emoji;
+			row.append(td);
 
 			const emojiStats = emojis[emoji];
 			for (const userID in users) {
 				const count = emojiStats[userID] || null;
-				let props = null;
+				td = document.createElement('td');
 				if (count) {
+					td.innerText = String(count);
 					const intensity = Math.round(Math.log(count) / max * 128);
-					const color = `#${intensity.toString(16)}0000`;
-					props = {'text': count, 'style': 'background-color: ' + color};
+					td.style.backgroundColor = `#${intensity.toString(16)}0000`;
 				}
-				row.grab(new Element('td', props));
+				row.append(td);
 			}
 
-			table.grab(row);
+			table.append(row);
 		}
 	}
 
-	function findMax(emojis) {
+	function findMax(emojis: UserCounts): number {
 		let max = 0;
 		for (const emoji in emojis) {
 			const emojiStats = emojis[emoji];
