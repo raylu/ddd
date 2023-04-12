@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+		"charliermarsh.ruff",
+		"dbaeumer.vscode-eslint",
+		"ms-python.vscode-pylance",
+		"runem.lit-plugin",
+		"samuelcolvin.jinjahtml",
+		"tamasfe.even-better-toml",
+	]
+}
