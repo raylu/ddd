@@ -34,14 +34,14 @@ export class LitDropdown extends LitElement {
 
 	render() {
 		return html`
-			<div class="moodropdown-display">${this.selected['name']}</div>
+			<div class="display">${this.selected['name']}</div>
 			<div>
-				<div class="moodropdown-arrow ${this.open ? 'up' : 'down'}"></div>
+				<div class="arrow ${this.open ? 'up' : 'down'}"></div>
 			</div>
-			<div class="moodropdown-options ${this.open ? 'open' : ''}">
+			<div class="options ${this.open ? 'open' : ''}">
 				<input @input=${debounce(100, this.search)} @keydown=${this.handleKeydown}>
 				${(this.filteredOptions ?? []).slice(0, 15).map((option) =>
-					html`<div class="moodropdown-option" data-value="${option['id']}">${option['name']}</div>`
+					html`<div class="option" data-value="${option['id']}">${option['name']}</div>`
 				)}
 			</div>
 		`;
@@ -84,7 +84,7 @@ export class LitDropdown extends LitElement {
 	private async handleClick(event: MouseEvent) {
 		event.stopPropagation();
 		const target = event.target as HTMLElement;
-		if (target.classList.contains('moodropdown-option')) {
+		if (target.classList.contains('option')) {
 			this.selected = {'id': target.dataset['value'], 'name': target.textContent};
 			this.open = false;
 			this.dispatchEvent(new CustomEvent('dropdown-select', {bubbles: true, composed: true}));
@@ -124,14 +124,14 @@ export class LitDropdown extends LitElement {
 			border: 1px solid #333;
 			cursor: default;
 		}
-		.moodropdown-display {
+		.display {
 			display: inline-block;
 			width: 182px;
 			height: 25px;
 			padding: 2.5px 3px;
 			cursor: inherit;
 		}
-		.moodropdown-options {
+		.options {
 			position: absolute;
 			z-index: 1;
 			display: none;
@@ -142,20 +142,20 @@ export class LitDropdown extends LitElement {
 			border: 2px solid #444;
 			cursor: inherit;
 		}
-		.moodropdown-options.open {
+		.options.open {
 			display: block;
 		}
-		.moodropdown-options > div {
+		.options > .option {
 			padding: 3px 5px;
 			cursor: inherit;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 			overflow: hidden;
 		}
-		.moodropdown-options > div:hover {
+		.options > .option:hover {
 			background-color: #333;
 		}
-		.moodropdown-options > input {
+		.options > input {
 			width: 190px;
 			margin: 3px;
 			cursor: inherit;
@@ -166,17 +166,17 @@ export class LitDropdown extends LitElement {
 			color: inherit;
 		}
 
-		.moodropdown-arrow {
+		.arrow {
 			margin: 8px 3px 0 0;
 			width: 0; 
 			height: 0; 
 			border-left: 5px solid transparent;
 			border-right: 5px solid transparent;
 		}
-		.moodropdown-arrow.up {
+		.arrow.up {
 			border-bottom: 5px solid #38a;
 		}
-		.moodropdown-arrow.down {
+		.arrow.down {
 			border-top: 5px solid #38a;
 		}
 	`;
