@@ -3,6 +3,7 @@
 
 import {MooDropdown} from './dropdown.mjs';
 import {MessageCount, MessageGraph} from './message_graph.mjs';
+import {LitDropdown, setupClose} from './lit_dropdown.mjs';
 import {LitElement, css, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import 'lit-flatpickr';
@@ -17,8 +18,11 @@ async function fetchJSON(path: string, qs?: Record<string, string>) {
 window.addEventListener('DOMContentLoaded', () => {
 	const channelSelect = new MooDropdown($('channel'));
 	const userSelect = new MooDropdown($('user'));
+	const channelDropdown = document.querySelector('#channel_dropdown') as LitDropdown;
+	const userDropdown = document.querySelector('#user_dropdown') as LitDropdown;
 	const dateSelect: DatePicker = document.querySelector('date-picker#dates');
 	MooDropdown.setupClose(channelSelect, userSelect);
+	setupClose();
 	channelSelect.addOption(null, '(all)');
 	userSelect.addOption(null, '(all)');
 	const monthGraph = document.querySelector('#month_graph') as MessageGraph;
@@ -31,10 +35,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	function query(initial: boolean) {
 		const qs = {};
-		if (channelSelect.value)
-			qs['channel_id'] = channelSelect.value;
-		if (userSelect.value)
-			qs['int_user_id'] = userSelect.value;
+		if (channelDropdown.selected['id'])
+			qs['channel_id'] = channelDropdown.selected['id'];
+		if (userDropdown.selected['id'])
+			qs['int_user_id'] = userDropdown.selected['id'];
 		const dateStr = dateSelect.getValue();
 		if (dateStr.length > 0) {
 			const dates = dateSelect.getValue().split(' to ');
@@ -62,6 +66,8 @@ window.addEventListener('DOMContentLoaded', () => {
 		});
 		channelSelect.render();
 		userSelect.render();
+		channelDropdown.setOptions([{id: null, name: '(all)'}].concat(data['channels']));
+		userDropdown.setOptions([{id: null, name: '(all)'}].concat(data['users']));
 
 		const qs = window.location.search.substr(1);
 		const params = {};
@@ -71,11 +77,15 @@ window.addEventListener('DOMContentLoaded', () => {
 		});
 		channelSelect.select(params['channel_id'] || null);
 		userSelect.select(params['int_user_id'] || null);
+		channelDropdown.select(params['channel_id'] || null);
+		userDropdown.select(params['int_user_id'] || null);
 		if (params['from'] && params['to'])
 			dateSelect.setDates(params['from'], params['to']);
 
 		channelSelect.addEvent('moodropdown-select', () => {query(false);});
 		userSelect.addEvent('moodropdown-select', () => {query(false);});
+		channelDropdown.addEventListener('dropdown-select', (event: CustomEvent) => {query(false);});
+		userDropdown.addEventListener('dropdown-select', (event: CustomEvent) => {query(false);});
 		dateSelect.addEventListener('date-changed', (event: CustomEvent) => {query(false);});
 
 		query(true);

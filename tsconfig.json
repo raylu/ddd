@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"outDir": "./static",
 		"target": "esnext",
-		"lib": ["dom", "esnext"],
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
 		"module": "nodenext",
 		"experimentalDecorators": true,
 		"moduleResolution": "node",
