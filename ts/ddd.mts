@@ -64,6 +64,12 @@ window.addEventListener('DOMContentLoaded', () => {
 		userDropdown.select(params['int_user_id'] || null);
 		if (params['from'] && params['to'])
 			dateSelect.setDates(params['from'], params['to']);
+		else { // default to the last year
+			const fromDate = new Date();
+			fromDate.setFullYear(fromDate.getFullYear() - 1);
+			const formatDate = (d: Date) => d.toISOString().split('T', 1)[0];
+			dateSelect.setDates(formatDate(fromDate), formatDate(new Date()));
+		}
 
 		channelDropdown.addEventListener('dropdown-select', (event: CustomEvent) => {query(false);});
 		userDropdown.addEventListener('dropdown-select', (event: CustomEvent) => {query(false);});
@@ -96,6 +102,7 @@ window.addEventListener('DOMContentLoaded', () => {
 @customElement('date-picker')
 class DatePicker extends LitElement {
 	render() {
+		// toISOString converts to UTC, which the server operates in
 		return html`<lit-flatpickr
 			mode="range"
 			allowInput
@@ -103,7 +110,7 @@ class DatePicker extends LitElement {
 			theme="dark"
 			showMonths="2"
 			minDate="2015-12-01"
-			.maxDate=${new Date()}
+			.maxDate=${new Date().toISOString().split('T', 1)[0]}
 			nextArrow="&rarr;"
 			prevArrow="&larr;"
 			.onChange="${(dates, str) => this.handleChange(dates, str)}"
