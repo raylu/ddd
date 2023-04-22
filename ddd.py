@@ -26,7 +26,7 @@ from sqlalchemy.sql import func
 if typing.TYPE_CHECKING:
 	from sqlalchemy.orm.query import Query
 
-from db import Session, Guilds, Channels, Users, Months, Messages, top_usernames
+from db import Channels, Guilds, Messages, Months, Session, Users, top_usernames
 
 def root(request):
 	guilds = Session().query(Guilds).all()
