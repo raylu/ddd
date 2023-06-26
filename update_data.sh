@@ -11,4 +11,4 @@ lzma raw/messages.csv
 
 ~/venv/bin/python3 ./prepare_db.py -q
 #./markov.py gen
-supervisorctl -c ~/supervisor/supervisord.conf restart ddd
+supervisorctl -c ~/supervisor/supervisord.conf restart ddd > /dev/null
