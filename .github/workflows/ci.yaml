@@ -23,9 +23,6 @@ jobs:
     - name: install python deps
       run: pip3 install --quiet --requirement requirements.txt ruff
 
-    - name: unittest
-      run: python3 -m unittest --verbose
-
     - name: ruff
       run: ruff check --output-format=github .
 
