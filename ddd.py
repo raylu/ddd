@@ -14,7 +14,6 @@ eventlet.monkey_patch()
 
 import datetime
 import mimetypes
-import os
 from os import path
 import random
 import typing
@@ -145,17 +144,12 @@ def markov_page(request, guild_id):
 	guild = Session().query(Guilds).get(int(guild_id))
 	return Response.render(request, 'markov.html', {'guild': guild})
 
-markov_models = {}
-for model_file in os.listdir('markov'):
-	if not model_file.endswith('.json') or model_file == '181866934353133570.json':
-		continue
-	_guild_id = int(model_file[:-5])
-	with open(path.join('markov', model_file), 'r', encoding='utf-8') as markov_file:
-		markov_models[_guild_id] = markovify.Text.from_json(markov_file.read())
 usernames = top_usernames()
 def markov_line(request, guild_id):
 	guild_id = int(guild_id)
-	line = markov_models[guild_id].make_short_sentence(150)
+	with open(path.join('markov', '%d.json' % guild_id), 'r', encoding='utf-8') as markov_file:
+		markov_model = markovify.Text.from_json(markov_file.read())
+	line = markov_model.make_short_sentence(150)
 	username = random.choice(usernames[guild_id])
 	return Response.json({'username': username, 'line': line})
 
