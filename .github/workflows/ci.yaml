@@ -1,4 +1,4 @@
-# https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: CI
 
@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.x'
         cache: 'pip'
@@ -26,11 +26,11 @@ jobs:
     - name: ruff
       run: ruff check --output-format=github .
 
-    - uses: pnpm/action-setup@v2
+    - uses: pnpm/action-setup@v3
       with:
         version: '*'
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
         node-version: 18
         cache: pnpm
