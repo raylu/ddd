@@ -27,7 +27,7 @@ def root(request):
 	return Response.render(request, 'index.html', {'guilds': guilds})
 
 def guild_page(request, guild_id):
-	guild = Session().query(Guilds).get(int(guild_id))
+	guild = Session().get(Guilds, int(guild_id))
 	return Response.render(request, 'guild.html', {'guild': guild})
 
 def channel_user_month_list(request, guild_id):
