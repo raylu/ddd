@@ -15,11 +15,9 @@ eventlet.monkey_patch()
 import datetime
 import mimetypes
 from os import path
-import random
 import typing
 
 import eventlet.wsgi
-import markovify
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 if typing.TYPE_CHECKING:
@@ -140,19 +138,6 @@ def emoji_stats(request, guild_id):
 	guild = Session().query(Guilds).get(int(guild_id))
 	return Response.render(request, 'emoji.html', {'guild': guild})
 
-def markov_page(request, guild_id):
-	guild = Session().query(Guilds).get(int(guild_id))
-	return Response.render(request, 'markov.html', {'guild': guild})
-
-usernames = top_usernames()
-def markov_line(request, guild_id):
-	guild_id = int(guild_id)
-	with open(path.join('markov', '%d.json' % guild_id), 'r', encoding='utf-8') as markov_file:
-		markov_model = markovify.Text.from_json(markov_file.read())
-	line = markov_model.make_short_sentence(150)
-	username = random.choice(usernames[guild_id])
-	return Response.json({'username': username, 'line': line})
-
 def static(request, file_path):
 	try:
 		with open(path.join('static', file_path), 'rb') as f:
@@ -171,9 +156,6 @@ routes = [
 	('GET', '/guild/<guild_id>/by_user.json', by_user),
 	('GET', '/guild/<guild_id>/by_channel.json', by_channel),
 	('GET', '/guild/<guild_id>/emoji', emoji_stats),
-
-	('GET', '/guild/<guild_id>/markov', markov_page),
-	('GET', '/guild/<guild_id>/markov.json', markov_line),
 
 	('GET', '/static/<path:file_path>', static),
 ]

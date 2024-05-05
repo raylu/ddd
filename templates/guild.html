@@ -10,10 +10,6 @@
 {% block content %}
 	<h1><a href="/">discord</a> &ndash; {{ guild.name }}</h1>
 
-	{% if guild.guild_id != 181866934353133570 %}
-		<a href="markov">markov simulation</a>
-	{% endif %}
-
 	<form>
 		channel: <lit-dropdown id="channel_dropdown"></lit-dropdown>
 		user: <lit-dropdown id="user_dropdown"></lit-dropdown>
