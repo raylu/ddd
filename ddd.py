@@ -9,21 +9,18 @@ if len(sys.argv) == 1 and sys.platform == 'linux': # dev
 	import pigwig.reloader_linux
 	pigwig.reloader_linux.init()
 
-import eventlet
-eventlet.monkey_patch()
-
 import datetime
 import mimetypes
 from os import path
 import typing
 
-import eventlet.wsgi
+import fastwsgi
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 if typing.TYPE_CHECKING:
 	from sqlalchemy.orm.query import Query
 
-from db import Channels, Guilds, Messages, Months, Session, Users, top_usernames
+from db import Channels, Guilds, Messages, Months, Session, Users
 
 def root(request):
 	guilds = Session().query(Guilds).all()
@@ -172,4 +169,4 @@ if __name__ == '__main__':
 	else:
 		app.template_engine.jinja_env.auto_reload = True
 
-	eventlet.wsgi.server(eventlet.listen(('127.1', port)), app)
+	fastwsgi.run(app, '127.0.0.1', port)
