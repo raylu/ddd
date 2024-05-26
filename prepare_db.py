@@ -8,6 +8,7 @@ import os
 from os import path
 import sqlite3
 import sys
+import typing
 
 import lz4framed
 
@@ -59,28 +60,9 @@ def main():
 				iter_counts(counts))
 
 	# insert programming messages
-	prog_counts = []
-	with lzma.open('raw/messages.csv.lzma', 'rt', encoding='utf-8') as f:
-		reader = csv.DictReader(f)
-		for i, row in enumerate(reader):
-			if len(row['channel_id']) == 0:
-				continue
-			channel_id = int(row['channel_id'])
-			int_user_id = int(row['int_user_id'])
-			hour = row['hour']
-			count = int(row['count'])
-			dt = datetime.datetime.strptime(hour[:14], '%Y-%m-%d %H:').replace(tzinfo=datetime.timezone.utc)
-			prog_counts.append((channel_id, int_user_id, dt.timestamp(), count))
-
-			month = dt.date().replace(day=1)
-			months.add(month)
-			int_user_ids.add(int_user_id)
-
-			if verbose and (i + 1) % 100000 == 0:
-				print('processed', i+1, 'programming hourly counts')
 	with conn:
 		conn.executemany('INSERT INTO messages (channel_id, int_user_id, hour, count) VALUES(?, ?, ?, ?)',
-				prog_counts)
+				iter_programming_message_counts(months, int_user_ids, verbose))
 
 	# insert users
 	with conn:
@@ -187,6 +169,27 @@ def iter_programming_users(users_path, int_user_ids):
 				continue
 			real_user_id = int(row['real_user_id'])
 			yield (int_user_id, real_user_id, row['name'])
+
+def iter_programming_message_counts(
+		months: set, int_user_ids: set, verbose: bool) -> typing.Iterator[tuple[int, int, float, int]]:
+	with lzma.open('raw/messages.csv.lzma', 'rt', encoding='utf-8') as f:
+		reader = csv.DictReader(f)
+		for i, row in enumerate(reader):
+			if len(row['channel_id']) == 0:
+				continue
+			channel_id = int(row['channel_id'])
+			int_user_id = int(row['int_user_id'])
+			hour = row['hour']
+			count = int(row['count'])
+			dt = datetime.datetime.strptime(hour[:14], '%Y-%m-%d %H:').replace(tzinfo=datetime.timezone.utc)
+			yield channel_id, int_user_id, dt.timestamp(), count
+
+			month = dt.date().replace(day=1)
+			months.add(month)
+			int_user_ids.add(int_user_id)
+
+			if verbose and (i + 1) % 100000 == 0:
+				print('processed', i+1, 'programming hourly counts')
 
 def iter_rows(channel_ids, verbose):
 	for guild in os.listdir(config.log_dir):
