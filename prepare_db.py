@@ -222,7 +222,7 @@ DISCORD_EPOCH = 1420070400000
 def snowflake_dt(snowflake):
 	''' twitter snowflake to datetime '''
 	unix_timestamp = ((snowflake >> 22) + DISCORD_EPOCH) // 1000
-	return datetime.datetime.utcfromtimestamp(unix_timestamp)
+	return datetime.datetime.fromtimestamp(unix_timestamp, datetime.UTC)
 
 if __name__ == '__main__':
 	main()
