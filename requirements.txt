@@ -1,4 +1,4 @@
-eventlet
+fastwsgi
 jinja2
 py-lz4framed
 pigwig
