@@ -1,14 +1,15 @@
 [tool.ruff]
 line-length = 120
+[tool.ruff.lint]
 select = [
 	'E', 'F',
 	'YTT', 'COM', 'T10', 'ISC', 'G', 'PIE', 'Q', 'RSE',
 	'PLC', 'PLE',
 	'RUF',
 ]
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = 'single'
 inline-quotes = 'single'
 multiline-quotes = 'single'
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 lines-after-imports = 1
