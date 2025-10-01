@@ -37,15 +37,10 @@ def main():
 				iter_programming_channels('raw/channels.csv'))
 
 	# insert non-programming messages
-	channel_ids = defaultdict(dict)
-	for guild_id, channel_id, channel_name in iter_channels():
-		guild_name = guild_names[guild_id]
-		channel_ids[guild_name][channel_name] = channel_id
-
 	counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) # [channel][user][hour]
 	months = set()
 	int_user_ids = set()
-	for row in iter_rows(channel_ids, verbose):
+	for row in iter_rows(verbose):
 		channel_id, int_user_id, message_id, _content = row
 		dt = snowflake_dt(message_id)
 		hour = dt.replace(minute=0, second=0, tzinfo=datetime.timezone.utc).timestamp()
@@ -191,16 +186,15 @@ def iter_programming_message_counts(
 			if verbose and (i + 1) % 100000 == 0:
 				print('processed', i+1, 'programming hourly counts')
 
-def iter_rows(channel_ids, verbose):
-	for guild in os.listdir(config.log_dir):
-		guild_path = path.join(config.log_dir, guild)
+def iter_rows(verbose: bool) -> typing.Iterator[tuple[str, int, int, str]]:
+	for guild_id in os.listdir(config.log_dir):
+		guild_path = path.join(config.log_dir, guild_id)
 		if not path.isdir(guild_path):
 			continue
-		for channel in os.listdir(guild_path):
+		for channel_id in os.listdir(guild_path):
 			if verbose:
-				print('processing', guild, '-', channel)
-			channel_id = channel_ids[guild][channel]
-			channel_path = path.join(guild_path, channel)
+				print('processing', guild_id, '-', channel_id)
+			channel_path = path.join(guild_path, channel_id)
 			for day_file in os.listdir(channel_path):
 				with open(path.join(channel_path, day_file), 'rb') as f:
 					compressed = f.read()
