@@ -12,7 +12,6 @@ import mimetypes
 from os import path
 import typing
 
-import fastwsgi
 from pigwig import PigWig, Response
 from sqlalchemy.sql import func
 if typing.TYPE_CHECKING:
@@ -163,8 +162,8 @@ app = PigWig(routes, template_dir='templates', response_done_handler=response_do
 if __name__ == '__main__':
 	port = 8000
 	if len(sys.argv) == 2: # production
-		port = int(sys.argv[1])
+		import waitress
+		waitress.serve(app, listen=sys.argv[1])
 	else:
 		app.template_engine.jinja_env.auto_reload = True
-
-	fastwsgi.run(app, '127.0.0.1', port)
+		app.main()

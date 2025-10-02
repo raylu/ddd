@@ -1,3 +1,14 @@
+[project]
+name = 'ddd'
+version = '0'
+dependencies = [
+	'jinja2',
+	'pigwig',
+	'py-lz4framed',
+	'sqlalchemy',
+	'waitress',
+]
+
 [tool.ruff]
 line-length = 120
 [tool.ruff.lint]
