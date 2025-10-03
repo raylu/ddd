@@ -7,7 +7,7 @@ scp -qr lilim.programming.im:raw .
 rm -f raw/messages.csv.lzma
 lzma raw/messages.csv
 
-~raylu/bin/uv --directory ../discord_log run ./discord_log -q
+~raylu/bin/uv --directory ../discord_log run --quiet ./discord_log -q
 
-~raylu/bin/uv run ./prepare_db.py -q
+~raylu/bin/uv run --quiet ./prepare_db.py -q
 sudo systemctl restart ddd
