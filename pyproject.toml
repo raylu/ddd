@@ -8,6 +8,10 @@ dependencies = [
 	'sqlalchemy',
 	'waitress',
 ]
+[dependency-groups]
+dev = [
+    'ruff',
+]
 
 [tool.ruff]
 line-length = 120

@@ -1,11 +1,12 @@
 /__pycache__/
-/raw/
-/node_modules/
 /config.py
 /ddd.db
 /ddd_update.db
 /markov/
-/ts/.tsbuildinfo
+/node_modules/
+/raw/
+/static/emoji_user_stats_*.json
 /static/*.js
 /static/*.js.map
-/static/emoji_user_stats_*.json
+/ts/.tsbuildinfo
+/uv.lock
